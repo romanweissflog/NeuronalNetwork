@@ -17,6 +17,7 @@ public:
   Output operator()(Input const &input);
 
 private:
+  void Reset();
   void GenerateFullyConnected();
 
 private:

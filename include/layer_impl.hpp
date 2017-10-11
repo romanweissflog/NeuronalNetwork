@@ -1,21 +1,26 @@
 #ifndef LAYER_IMPL_HPP_
 #define LAYER_IMPL_HPP_
 
-Layer::Layer(size_t nrNeurons, NeuronType const &type)
+Layer::Layer()
 {
-  for (size_t i{}; i < nrNeurons; ++i)
+
+}
+
+Layer::Layer(size_t nrNeurons, NeuronType const &type, size_t neuronNumber)
+{
+  for (size_t i{}; i < nrNeurons; ++i, ++neuronNumber)
   {
     if (type == NeuronType::TypeInput)
     {
-      m_neurons.push_back(std::make_shared<InputNeuron>());
+      m_neurons.emplace_back(std::make_shared<InputNeuron>(neuronNumber));
     }
     else if (type == NeuronType::TypeHidden)
     {
-      m_neurons.push_back(std::make_shared<HiddenNeuron>());
+      m_neurons.emplace_back(std::make_shared<HiddenNeuron>(neuronNumber));
     }
     else if (type == NeuronType::TypeOutput)
     {
-      m_neurons.push_back(std::make_shared<OutputNeuron>());
+      m_neurons.emplace_back(std::make_shared<OutputNeuron>(neuronNumber));
     }
     else
     {
@@ -24,7 +29,7 @@ Layer::Layer(size_t nrNeurons, NeuronType const &type)
   }
 }
 
-std::shared_ptr<Neuron> const Layer::GetNeuron(size_t idx) const
+std::shared_ptr<Neuron> Layer::GetNeuron(size_t idx) 
 {
   if (idx >= m_neurons.size())
   {
@@ -36,6 +41,30 @@ std::shared_ptr<Neuron> const Layer::GetNeuron(size_t idx) const
 size_t Layer::GetSize() const
 {
   return m_neurons.size();
+}
+
+void Layer::Process()
+{
+  for (auto &&n : m_neurons)
+  {
+    n->Process();
+  }
+}
+
+void Layer::operator()()
+{
+  for (auto &&n : m_neurons)
+  {
+    (*n)();
+  }
+}
+
+void Layer::Reset()
+{
+  for (auto &&n : m_neurons)
+  {
+    n->Reset();
+  }
 }
 
 #endif

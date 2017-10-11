@@ -1,14 +1,13 @@
 #ifndef NEURON_HPP_
 #define NEURON_HPP_
 
-#include "connection.hpp"
-#include "functions.h"
+#include "signal.hpp"
+#include "types.h"
 
 #include <vector>
+#include <memory>
 
-using NeuronConnections = std::vector<Connection>;
-
-enum NeuronType
+enum class NeuronType : uint8_t
 {
   TypeUndef,
   TypeInput,
@@ -19,45 +18,55 @@ enum NeuronType
 class Neuron
 {
 public:
+  Neuron(size_t idx = 0, NeuronType type = NeuronType::TypeUndef);
   virtual ~Neuron() = default;
-  virtual void SetInputValue(double v) = 0;
+  virtual void SetInputValue(double weight, double v) = 0;
   double GetOuputValue() const;
+  virtual void Process();
+  virtual void Reset() = 0;
+  std::string GetName() const;
+  virtual void Connect(std::shared_ptr<Neuron> const &other);
+  virtual void operator()();
 
 protected:
+  WeightedSignal m_signal;
+  size_t m_idx;
+  NeuronType m_type;
   double m_value;
 };
 
 class InputNeuron : public Neuron
 {
 public:
-  InputNeuron(NeuronConnections const &outputs = {});
-  void SetInputValue(double v);
-
-private:
-  NeuronConnections m_outputs;
+  InputNeuron(size_t idx);
+  void SetInputValue(double weight, double v) override;
+  void Reset() override;
+  void Connect(std::shared_ptr<Neuron> const &other) override;
 };
 
 class HiddenNeuron : public Neuron
 {
 public:
-  HiddenNeuron(NeuronConnections const &inputs = {}, NeuronConnections const &outputs = {});
-  void SetInputValue(double v);
+  HiddenNeuron(size_t idx);
+  void SetInputValue(double weight, double v) override;
+  void Process() override;
+  void Reset() override;
+  void Connect(std::shared_ptr<Neuron> const &other) override;
 
 private:
-  std::vector<WeightedInput> m_inputs;
-  NeuronConnections m_inputs;
-  NeuronConnections m_outputs;
+  std::vector<WeightedInput> m_inputValues;
 };
 
 class OutputNeuron : public Neuron
 {
 public:
-  OutputNeuron(NeuronConnections const &inputs = {}); 
-  void SetInputValue(double v);
+  OutputNeuron(size_t idx);
+  void SetInputValue(double weight, double v) override;
+  void Process() override;
+  void Reset() override;
 
 private:
-  std::vector<WeightedInput> m_inputs;
-  NeuronConnections m_inputs;
+  std::vector<WeightedInput> m_inputValues;
 };
 
 #include "neuron_impl.hpp"

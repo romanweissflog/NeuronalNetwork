@@ -1,14 +1,8 @@
 #ifndef FUNCTIONS_H_
 #define FUNCTIONS_H_
 
-#include <functional>
+#include "types.h"
 #include <vector>
-
-struct WeightedInput
-{
-  double weight;
-  double value;
-};
 
 namespace transfer_function
 {

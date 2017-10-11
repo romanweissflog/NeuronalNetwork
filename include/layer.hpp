@@ -10,10 +10,14 @@ class Layer
 {
   using NeuronLayer = std::vector<std::shared_ptr<Neuron>>;
 public:
-  Layer(size_t nrNeurons = 0, NeuronType const &type = NeuronType::TypeUndef);
+  Layer();
+  Layer(size_t nrNeurons, NeuronType const &type, size_t totalNrExistingNeurons);
   ~Layer() = default;
-  std::shared_ptr<Neuron> const GetNeuron(size_t idx) const;
+  std::shared_ptr<Neuron> GetNeuron(size_t idx);
   size_t GetSize() const;
+  void Process();
+  void operator()();
+  void Reset();
 
 private:
   NeuronLayer m_neurons;
