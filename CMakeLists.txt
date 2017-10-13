@@ -1,9 +1,17 @@
 cmake_minimum_required(VERSION 3.1)
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+set(CMAKE_CXX_FLAGS_RELEASE "/MT")
+set(CMAKE_CXX_FLAGS_DEBUG "/MTd")
+
 project(NeuronalNetwork)
 
-set(PICOJSON "" CACHE FILEPATH "path to picojson dir")
-include_directories(${PICOJSON})
+set(PICOJSON_DIR "" CACHE FILEPATH "path to picojson dir")
+set(GTEST_DIR "" CACHE FILEPATH "path to gtest dir")
+
+include_directories(${PICOJSON_DIR})
+link_directories(${GTEST_DIR}/lib)
 
 set(name OwnNetwork)
 add_executable(${name}
@@ -23,3 +31,5 @@ add_executable(${name}
   src/own_network_main.cpp)
 
 target_include_directories(${name} PUBLIC include)
+
+add_subdirectory(test)
