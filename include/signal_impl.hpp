@@ -20,7 +20,7 @@ namespace
 
 
 WeightedSignal::WeightedSignal(size_t idx)
-  : Signal(idx)
+  : Signal<double, double>(idx)
 {
   m_weight = Initialize();
 }

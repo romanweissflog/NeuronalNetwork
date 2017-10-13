@@ -7,11 +7,11 @@
 #include <vector>
 #include <functional>
 
-//template<typename... Args>
+template<typename W, typename T>
 class Signal
 {
 protected:
-  using Slot = std::function<void(double, double)>;
+  using Slot = std::function<void(W, T)>;
 
 public:
   Signal(size_t idx = 0)
@@ -25,7 +25,7 @@ public:
     m_slots.push_back(slot);
   }
 
-  virtual void Emit(double) = 0;
+  virtual void Emit(T) = 0;
 
   size_t GetIdx() const
   {
@@ -37,7 +37,7 @@ protected:
   size_t m_idx;
 };
 
-class WeightedSignal : public Signal
+class WeightedSignal : public Signal<double, double>
 {
 public:
   WeightedSignal(size_t idx = 0);
