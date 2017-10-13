@@ -42,8 +42,11 @@ class WeightedSignal : public Signal<double, double>
 public:
   WeightedSignal(size_t idx = 0);
   void Emit(double val) override;
+  void AdaptWeight(double delta);
+  double GetOldWeight() const;
 
 private:
+  double m_oldWeight;
   double m_weight;
 };
 

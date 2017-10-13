@@ -7,7 +7,13 @@ Layer::Layer()
 }
 
 Layer::Layer(size_t nrNeurons, NeuronType const &type, size_t neuronNumber)
+  : m_type(type)
 {
+  if (type == NeuronType::TypeInput || type == NeuronType::TypeHidden)
+  {
+    m_neurons.emplace_back(std::make_shared<BiasNeuron>(neuronNumber));
+    neuronNumber++;
+  }
   for (size_t i{}; i < nrNeurons; ++i, ++neuronNumber)
   {
     if (type == NeuronType::TypeInput)
@@ -29,13 +35,22 @@ Layer::Layer(size_t nrNeurons, NeuronType const &type, size_t neuronNumber)
   }
 }
 
-std::shared_ptr<Neuron> Layer::GetNeuron(size_t idx) 
+std::shared_ptr<Neuron> Layer::GetNeuron(size_t idx)
 {
   if (idx >= m_neurons.size())
   {
     throw std::runtime_error("Bad index in GetNeuron");
   }
   return m_neurons[idx];
+}
+
+NeuronType Layer::GetNeuronType(size_t idx) const
+{
+  if (idx >= m_neurons.size())
+  {
+    throw std::runtime_error("Bad index in GetNeuronType");
+  }
+  return m_neurons[idx]->GetType();
 }
 
 size_t Layer::GetSize() const
@@ -65,6 +80,26 @@ void Layer::Reset()
   {
     n->Reset();
   }
+}
+
+Layer::iterator Layer::begin()
+{
+  return std::begin(m_neurons);
+}
+
+Layer::iterator Layer::end()
+{
+  return std::end(m_neurons);
+}
+
+Layer::const_iterator Layer::cbegin() const
+{
+  return std::cbegin(m_neurons);
+}
+
+Layer::const_iterator Layer::cend() const
+{
+  return std::cend(m_neurons);
 }
 
 #endif

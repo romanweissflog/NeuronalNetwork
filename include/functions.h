@@ -16,4 +16,9 @@ namespace activation_function
   double ReLu(double);
 }
 
+namespace first_derivate
+{
+  double Sigmoid(double);
+}
+
 #endif

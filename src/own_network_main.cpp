@@ -9,11 +9,13 @@ int main()
   {
     Network<1> network;
     Input input{ 1.0, 1.0 };
-    auto output = network(input);
+    network.ForwardPass(input);
+    auto const output = network.GetOutput();
     for (auto &&o : output)
     {
       std::cout << o << "\n";
     }
+    network.BackwardPass(output);
   }
   catch (std::runtime_error e)
   {

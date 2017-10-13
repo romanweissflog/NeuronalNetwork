@@ -1,9 +1,16 @@
 #ifndef NETWORK_IMPL_HPP_
 #define NETWORK_IMPL_HPP_
 
+#include "functions.h"
+
+#include <vector>
+
 namespace
 {
-
+  namespace constants
+  {
+    double const backwardEps = 0.1;
+  }
 }
 
 template<size_t Size>
@@ -31,7 +38,10 @@ void Network<Size>::GenerateFullyConnected()
     {
       for (size_t j{}; j < m_outputLayer.GetSize(); ++j)
       {
-        m_inputLayer.GetNeuron(i)->Connect(m_outputLayer.GetNeuron(j));
+        if (m_outputLayer.GetNeuronType(j) != NeuronType::TypeBias)
+        {
+          m_inputLayer.GetNeuron(i)->Connect(m_outputLayer.GetNeuron(j));
+        }
       }
     }
   }
@@ -41,7 +51,10 @@ void Network<Size>::GenerateFullyConnected()
     {
       for (size_t j{}; j < m_hiddenLayer[0].GetSize(); ++j)
       {
-        m_inputLayer.GetNeuron(i)->Connect(m_hiddenLayer[0].GetNeuron(j));
+        if (m_hiddenLayer[0].GetNeuronType(j) != NeuronType::TypeBias)
+        {
+          m_inputLayer.GetNeuron(i)->Connect(m_hiddenLayer[0].GetNeuron(j));
+        }
       }
     }
 
@@ -51,7 +64,10 @@ void Network<Size>::GenerateFullyConnected()
       {
         for (size_t j{}; j < m_hiddenLayer[k + 1].GetSize(); ++j)
         {
-          m_hiddenLayer[k].GetNeuron(i)->Connect(m_hiddenLayer[k + 1].GetNeuron(j));
+          if (m_hiddenLayer[k + 1].GetNeuronType(j) != NeuronType::TypeBias)
+          {
+            m_hiddenLayer[k].GetNeuron(i)->Connect(m_hiddenLayer[k + 1].GetNeuron(j));
+          }
         }
       }
     }
@@ -60,18 +76,21 @@ void Network<Size>::GenerateFullyConnected()
     {
       for (size_t j{}; j < m_outputLayer.GetSize(); ++j)
       {
-        m_hiddenLayer[Size - 1].GetNeuron(i)->Connect(m_outputLayer.GetNeuron(j));
+        if (m_outputLayer.GetNeuronType(j) != NeuronType::TypeBias)
+        {
+          m_hiddenLayer[Size - 1].GetNeuron(i)->Connect(m_outputLayer.GetNeuron(j));
+        }
       }
     }
   }
 }
 
 template<size_t Size>
-Output Network<Size>::operator()(Input const &input)
+void Network<Size>::ForwardPass(Input const &input)
 {
   Reset();
 
-  if (input.size() != m_inputLayer.GetSize())
+  if (input.size() != m_inputLayer.GetSize() - 1) // -1 because of Bias
   {
     throw std::runtime_error("Bad input size");
   }
@@ -95,7 +114,6 @@ Output Network<Size>::operator()(Input const &input)
   {
     output.push_back(m_outputLayer.GetNeuron(i)->GetOuputValue());
   }
-  return output;
 }
 
 template<size_t Size>
@@ -109,6 +127,77 @@ void Network<Size>::Reset()
   }
 
   m_outputLayer.Reset();
+}
+
+template<size_t Size>
+void Network<Size>::BackwardPass(Output const &expected)
+{
+  if (expected.size() != m_outputLayer.GetSize())
+  {
+    throw std::runtime_error("Bad size of expected output vector");
+  }
+  Delta deltaOutput;
+  deltaOutput.reserve(m_outputLayer.GetSize());
+  
+  // get delta values for output layer
+  size_t idx{};
+  for (auto &&n : m_outputLayer)
+  {
+    deltaOutput[idx] = first_derivate::Sigmoid(n->GetInputValue()) *
+      (expected[idx] - n->GetOuputValue());
+    idx++;
+  }
+  
+  auto adaptWeights = [](Layer &layer, std::vector<double> const &delta)
+  {
+    for (auto &&d: delta)
+    {
+      for (auto &&n : layer)
+      {
+        double delta = constants::backwardEps * d * n->GetOuputValue();
+        n->GetSignal().AdaptWeight(delta);
+      }
+    }
+  };
+
+  if (Size == 0)
+  {
+    adaptWeights(m_inputLayer, deltaOutput);
+  }
+  else
+  {
+    adaptWeights(m_hiddenLayer[Size - 1], deltaOutput);
+
+    auto getDelta = [](Layer const &layer, Delta const &nextDelta) -> Delta
+    {
+      size_t idx{};
+      Delta delta;
+      for (auto &&n : layer)
+      {
+        double sum = 0.0;
+        delta[idx] = first_derivate::Sigmoid(neuron->GetInputValue()) *
+          (expected[idx] - neuron->GetOuputValue());
+        idx++;
+      }
+      return delta;
+    }
+
+    for (auto &&iNeuron : m_inputLayer)
+    {
+      count = 0U;
+      for (auto &&oNeuron : m_outputLayer)
+      {
+        delta = constants::backwardEps * deltaOutput[count] * iNeuron->GetOuputValue();
+        iNeuron->GetSignal().AdaptWeight(delta);
+      }
+    }
+  }
+}
+
+template<size_t Size>
+Output Network<Size>::GetOutput() const
+{
+  return m_currentOutput;
 }
 
 #endif

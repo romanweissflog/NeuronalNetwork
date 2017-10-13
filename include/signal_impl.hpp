@@ -33,4 +33,15 @@ void WeightedSignal::Emit(double value)
   }
 }
 
+void WeightedSignal::AdaptWeight(double delta)
+{
+  m_oldWeight = m_weight;
+  m_weight += delta;
+}
+
+double WeightedSignal::GetOldWeight() const
+{
+  return m_oldWeight;
+}
+
 #endif

@@ -25,19 +25,33 @@ Neuron::Neuron(size_t idx, NeuronType type)
   : m_idx(idx)
   , m_type(type)
   , m_signal(idx)
+  , m_input(0.0)
+  , m_output(1.0)
 {}
 
 double Neuron::GetOuputValue() const
 {
-  return m_value;
+  return m_output;
 }
 
-void Neuron::Process()
-{}
+double Neuron::GetInputValue() const
+{
+  return m_input;
+}
+
+WeightedSignal Neuron::GetSignal(size_t idx)
+{
+  return m_signal;
+}
 
 std::string Neuron::GetName() const
 {
   return to_string(m_type) + "_" + std::to_string(m_idx);
+}
+
+NeuronType Neuron::GetType() const
+{
+  return m_type;
 }
 
 void Neuron::Connect(std::shared_ptr<Neuron> const &)
@@ -45,7 +59,22 @@ void Neuron::Connect(std::shared_ptr<Neuron> const &)
 
 void Neuron::operator()()
 {
-  m_signal.Emit(m_value);
+  m_signal.Emit(m_output);
+}
+
+void Neuron::SetInputValue(double, double)
+{
+
+}
+
+void Neuron::Process()
+{
+
+}
+
+void Neuron::Reset()
+{
+
 }
 
 
@@ -55,12 +84,14 @@ InputNeuron::InputNeuron(size_t idx = 0)
 
 void InputNeuron::SetInputValue(double weight, double v)
 {
-  m_value = weight * v;
+  m_input = weight * v;
+  m_output = weight * v;
 }
 
 void InputNeuron::Reset()
 {
-  m_value = 0.0;
+  m_input = -1.0;
+  m_output = 1.0;
 }
 
 void InputNeuron::Connect(std::shared_ptr<Neuron> const &other)
@@ -80,8 +111,8 @@ void HiddenNeuron::SetInputValue(double weight, double v)
 
 void HiddenNeuron::Process()
 {
-  double sum = transfer_function::LinearSum(m_inputValues);
-  m_value = activation_function::Identity(sum);
+  m_input = transfer_function::LinearSum(m_inputValues);
+  m_output = activation_function::Identity(m_input);
 }
 
 void HiddenNeuron::Reset()
@@ -106,13 +137,19 @@ void OutputNeuron::SetInputValue(double weight, double v)
 
 void OutputNeuron::Process()
 {
-  double sum = transfer_function::LinearSum(m_inputValues);
-  m_value = activation_function::Identity(sum);
+  m_input = transfer_function::LinearSum(m_inputValues);
+  m_output = activation_function::Identity(m_input);
 }
 
 void OutputNeuron::Reset()
 {
   m_inputValues.clear();
+}
+
+BiasNeuron::BiasNeuron(size_t idx)
+  : Neuron(idx, NeuronType::TypeBias)
+{
+  m_output = 1.0;
 }
 
 #endif

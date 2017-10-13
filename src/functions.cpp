@@ -31,3 +31,12 @@ namespace activation_function
     return std::max(0.0, x);
   }
 }
+
+namespace first_derivate
+{
+  double Sigmoid(double x)
+  {
+    double const f = activation_function::Sigmoid(x);
+    return f * (1 - f);
+  }
+}
