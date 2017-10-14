@@ -2,12 +2,13 @@
 #define LAYER_HPP_
 
 #include "neuron.hpp"
+#include "common_interface.hpp"
 
 #include <vector>
 #include <memory>
 
 template<typename T>
-class Layer
+class Layer : Common
 {
   using type = std::shared_ptr<Neuron<T>>;
   using NeuronLayer = std::vector<type>;
@@ -15,7 +16,7 @@ class Layer
 
 public:
   Layer();
-  Layer(size_t nrNeurons, NeuronType const &type, size_t totalNrExistingNeurons);
+  Layer(size_t nrNeurons, NeuronType const &type, size_t totalNrExistingNeurons, size_t indent);
   ~Layer() = default;
   std::shared_ptr<Neuron<T>> GetNeuron(size_t idx);
   NeuronType GetNeuronType(size_t idx) const;
@@ -23,6 +24,7 @@ public:
   void Process();
   void operator()();
   void Reset();
+  std::ostream& Print(std::ostream &os) const override;
 
   const_iterator begin() const;
   const_iterator end() const;

@@ -13,26 +13,27 @@ namespace
   }
 }
 
-template<size_t Size>
-Network<Size>::Network()
+template<size_t Size, typename T>
+Network<Size, T>::Network(size_t indent)
+  : Common(indent)
 {
   size_t neuronCount{};
-  m_inputLayer = Layer<double>(2, NeuronType::TypeInput, neuronCount);  
+  m_inputLayer = Layer<T>(2, NeuronType::TypeInput, neuronCount, m_indent + 2);  
   neuronCount += 2;
   for (size_t i{}; i < Size; ++i)
   {
-    m_hiddenLayer[i] = Layer<double>(2, NeuronType::TypeHidden, neuronCount);
+    m_hiddenLayer[i] = Layer<T>(2, NeuronType::TypeHidden, neuronCount, m_indent + 2);
     neuronCount += 2;
   }
-  m_outputLayer = Layer<double>(2, NeuronType::TypeOutput, neuronCount);
+  m_outputLayer = Layer<T>(2, NeuronType::TypeOutput, neuronCount, m_indent + 2);
 
   GenerateFullyConnected();
 }
 
-template<size_t Size>
-void Network<Size>::GenerateFullyConnected()
+template<size_t Size, typename T>
+void Network<Size, T>::GenerateFullyConnected()
 {
-  auto connect = [](Layer<double> &out, Layer<double> &in)
+  auto connect = [](Layer<T> &out, Layer<T> &in)
   {
     for (auto &oN : out)
     {
@@ -60,8 +61,8 @@ void Network<Size>::GenerateFullyConnected()
   }
 }
 
-template<size_t Size>
-void Network<Size>::ForwardPass(Input const &input)
+template<size_t Size, typename T>
+void Network<Size, T>::ForwardPass(Input const &input)
 {
   Reset();
 
@@ -94,8 +95,8 @@ void Network<Size>::ForwardPass(Input const &input)
   }
 }
 
-template<size_t Size>
-void Network<Size>::Reset()
+template<size_t Size, typename T>
+void Network<Size, T>::Reset()
 {
   m_inputLayer.Reset();
   m_currentOutput.clear();
@@ -108,8 +109,8 @@ void Network<Size>::Reset()
   m_outputLayer.Reset();
 }
 
-template<size_t Size>
-void Network<Size>::BackwardPass(Output const &expected)
+template<size_t Size, typename T>
+void Network<Size, T>::BackwardPass(Output const &expected)
 {
   if (expected.size() != m_outputLayer.GetSize())
   {
@@ -126,7 +127,7 @@ void Network<Size>::BackwardPass(Output const &expected)
     idx++;
   }
   
-  auto adaptWeights = [](Layer<double> &layer, Delta const &deltas)
+  auto adaptWeights = [](Layer<T> &layer, Delta const &deltas)
   {
     for (size_t i{}; i < deltas.size(); ++i)
     {
@@ -146,7 +147,7 @@ void Network<Size>::BackwardPass(Output const &expected)
   {
     adaptWeights(m_hiddenLayer[Size - 1], delta);
 
-    auto getDelta = [](Layer<double> const &layer, Delta const &nextDelta) -> Delta
+    auto getDelta = [](Layer<T> const &layer, Delta const &nextDelta) -> Delta
     {
       Delta deltas;
       size_t nextSize = nextDelta.size();
@@ -178,31 +179,24 @@ void Network<Size>::BackwardPass(Output const &expected)
   }
 }
 
-template<size_t Size>
-Output Network<Size>::GetOutput() const
+template<size_t Size, typename T>
+typename Network<Size, T>::Output Network<Size, T>::GetOutput() const
 {
   return m_currentOutput;
 }
 
-template<size_t Size>
-void Network<Size>::DisplayInformation() const
+template<size_t Size, typename T>
+std::ostream& Network<Size, T>::Print(std::ostream &os) const
 {
-  auto print = [](Layer<double> const &l)
-  {
-    for (auto &&n : l)
-    {
-      std::cout << "  neuron: " << n->GetName() << " connection size: " << n->GetConnectionSize() << "\n";
-    }
-  };
-  std::cout << "INPUTLAYER\n";
-  print(m_inputLayer);
+  Indent(os);
+  os << "Network\n";
+  os << m_inputLayer;
   for (size_t i{}; i < Size; ++i)
   {
-    std::cout << "HIDDENLAYER" + std::to_string(i) << "\n";
-    print(m_hiddenLayer[i]);
+    os << m_hiddenLayer[i];
   }
-  std::cout << "OUTPUTLAYER\n";
-  print(m_outputLayer);
+  os << m_outputLayer;
+  return os;
 }
 
 #endif

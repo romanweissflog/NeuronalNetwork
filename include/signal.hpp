@@ -13,10 +13,11 @@ class Signal
 {
 protected:
   using Slot = std::function<void(W, T)>;
-
+  
 public:
-  Signal(size_t idx = 0)
+  Signal(size_t idx = 0, size_t indent = 0)
     : m_idx(idx)
+    , m_indent(indent)
   {}
 
   virtual ~Signal() = default;
@@ -31,9 +32,7 @@ public:
 
 protected:
   size_t m_idx;
-
-private:
-  std::vector<Slot> m_slots;
+  size_t m_indent;
 };
 
 
@@ -41,14 +40,15 @@ template<typename T>
 class ConnectedSignal : public Signal<double, T>
 {
   using ConnectedSlot = std::vector<std::pair<Connection, Slot>>;
+  using const_iterator = typename ConnectedSlot::const_iterator;
 public:
-  ConnectedSignal(size_t idx)
-    : Signal(idx)
+  ConnectedSignal(size_t idx, size_t indent)
+    : Signal(idx, indent)
   {}
 
   virtual void Connect(Slot const &slot)
   {
-    Connection conn(1.0);
+    Connection conn(1.0, m_indent);
     m_slots.emplace_back(conn, slot);
   }
 
@@ -72,6 +72,16 @@ public:
       throw std::runtime_error("Bad index for connection");
     }
     return m_slots[idx].first;
+  }
+
+  const_iterator begin() const
+  {
+    return std::begin(m_slots);
+  }
+
+  const_iterator end() const
+  {
+    return std::end(m_slots);
   }
 
 private:

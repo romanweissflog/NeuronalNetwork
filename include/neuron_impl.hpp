@@ -5,28 +5,12 @@
 
 #include <string>
 
-namespace
-{
-  std::string to_string(NeuronType type)
-  {
-    switch (type)
-    {
-    case NeuronType::TypeUndef: return "Undef"; 
-    case NeuronType::TypeInput: return "Input";
-    case NeuronType::TypeHidden: return "Hidden";
-    case NeuronType::TypeOutput: return "Output";
-    case NeuronType::TypeBias: return "Bias";
-    default:
-      throw std::runtime_error("Unknown Neuron Type");
-    }
-  }
-}
-
 template<typename T>
-Neuron<T>::Neuron(size_t idx, NeuronType type)
-  : m_idx(idx)
+Neuron<T>::Neuron(size_t idx, NeuronType type, size_t indent)
+  : Common(indent)
+  , m_idx(idx)
   , m_type(type)
-  , m_signal(idx)
+  , m_signal(idx, indent + 2)
   , m_input(0.0)
   , m_output(1.0)
 {}
@@ -97,10 +81,22 @@ void Neuron<T>::Reset()
   
 }
 
+template<typename T>
+std::ostream& Neuron<T>::Print(std::ostream &os) const
+{
+  Indent(os);
+  os << "Neuron " << GetName() << ": input: " << m_input << ", output: " << m_output << "\n";
+  for (auto &&c : m_signal)
+  {
+    os << c.first;
+  }
+  return os;
+}
+
 
 template<typename T>
-InputNeuron<T>::InputNeuron(size_t idx)
-  : Neuron<T>(idx, NeuronType::TypeInput)
+InputNeuron<T>::InputNeuron(size_t idx, size_t indent)
+  : Neuron<T>(idx, NeuronType::TypeInput, indent)
 {}
 
 template<typename T>
@@ -118,15 +114,15 @@ void InputNeuron<T>::Reset()
 }
 
 template<typename T>
-void InputNeuron<T>::Connect(std::shared_ptr<Neuron> const &other)
+void InputNeuron<T>::Connect(std::shared_ptr<Neuron<T>> const &other)
 {
   m_signal.Connect(std::bind(&Neuron::SetInputValue, other, std::placeholders::_1, std::placeholders::_2));
 }
 
 
 template<typename T>
-HiddenNeuron<T>::HiddenNeuron(size_t idx)
-  : Neuron<T>(idx, NeuronType::TypeHidden)
+HiddenNeuron<T>::HiddenNeuron(size_t idx, size_t indent)
+  : Neuron<T>(idx, NeuronType::TypeHidden, indent)
 {}
 
 template<typename T>
@@ -149,15 +145,15 @@ void HiddenNeuron<T>::Reset()
 }
 
 template<typename T>
-void HiddenNeuron<T>::Connect(std::shared_ptr<Neuron> const &other)
+void HiddenNeuron<T>::Connect(std::shared_ptr<Neuron<T>> const &other)
 {
   m_signal.Connect(std::bind(&Neuron::SetInputValue, other, std::placeholders::_1, std::placeholders::_2));
 }
 
 
 template<typename T>
-OutputNeuron<T>::OutputNeuron(size_t idx)
-  : Neuron<T>(idx, NeuronType::TypeOutput)
+OutputNeuron<T>::OutputNeuron(size_t idx, size_t indent)
+  : Neuron<T>(idx, NeuronType::TypeOutput, indent)
 {}
 
 template<typename T>
@@ -181,15 +177,15 @@ void OutputNeuron<T>::Reset()
 
 
 template<typename T>
-BiasNeuron<T>::BiasNeuron(size_t idx)
-  : Neuron<T>(idx, NeuronType::TypeBias)
+BiasNeuron<T>::BiasNeuron(size_t idx, size_t indent)
+  : Neuron<T>(idx, NeuronType::TypeBias, indent)
 {
   m_input = 1.0;
   m_output = 1.0;
 }
 
 template<typename T>
-void BiasNeuron<T>::Connect(std::shared_ptr<Neuron> const &other)
+void BiasNeuron<T>::Connect(std::shared_ptr<Neuron<T>> const &other)
 {
   m_signal.Connect(std::bind(&Neuron::SetInputValue, other, std::placeholders::_1, std::placeholders::_2));
 }

@@ -2,6 +2,7 @@
 #define TYPES_H_
 
 #include <cstdint>
+#include <string>
 
 struct EmptyInput
 {};
@@ -24,5 +25,7 @@ enum class NeuronType : uint8_t
   TypeOutput,
   TypeBias
 };
+
+std::string to_string(NeuronType);
 
 #endif

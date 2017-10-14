@@ -8,27 +8,28 @@ Layer<T>::Layer()
 }
 
 template<typename T>
-Layer<T>::Layer(size_t nrNeurons, NeuronType const &type, size_t neuronNumber)
-  : m_type(type)
+Layer<T>::Layer(size_t nrNeurons, NeuronType const &type, size_t neuronNumber, size_t indent)
+  : Common(indent)
+  , m_type(type)
 {
   if (type == NeuronType::TypeInput || type == NeuronType::TypeHidden)
   {
-    m_neurons.emplace_back(std::make_shared<BiasNeuron<T>>(neuronNumber));
+    m_neurons.emplace_back(std::make_shared<BiasNeuron<T>>(neuronNumber, m_indent + 2));
     neuronNumber++;
   }
   for (size_t i{}; i < nrNeurons; ++i, ++neuronNumber)
   {
     if (type == NeuronType::TypeInput)
     {
-      m_neurons.emplace_back(std::make_shared<InputNeuron<T>>(neuronNumber));
+      m_neurons.emplace_back(std::make_shared<InputNeuron<T>>(neuronNumber, m_indent + 2));
     }
     else if (type == NeuronType::TypeHidden)
     {
-      m_neurons.emplace_back(std::make_shared<HiddenNeuron<T>>(neuronNumber));
+      m_neurons.emplace_back(std::make_shared<HiddenNeuron<T>>(neuronNumber, m_indent + 2));
     }
     else if (type == NeuronType::TypeOutput)
     {
-      m_neurons.emplace_back(std::make_shared<OutputNeuron<T>>(neuronNumber));
+      m_neurons.emplace_back(std::make_shared<OutputNeuron<T>>(neuronNumber, m_indent + 2));
     }
     else
     {
@@ -103,6 +104,18 @@ template<typename T>
 typename Layer<T>::const_iterator Layer<T>::end() const
 {
   return std::end(m_neurons);
+}
+
+template<typename T>
+std::ostream& Layer<T>::Print(std::ostream &os) const
+{
+  Indent(os);
+  os << "Layertype " << to_string(m_type) << "\n";
+  for (auto &&n : m_neurons)
+  {
+    os << *n;
+  }
+  return os;
 }
 
 #endif

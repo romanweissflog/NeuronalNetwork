@@ -17,8 +17,9 @@ namespace
   }
 }
 
-Connection::Connection(double weight)
-  : m_weight(weight)
+Connection::Connection(double weight, size_t indent)
+  : Common(indent)
+  , m_weight(weight)
   , m_oldWeight(weight)
 {
 
@@ -38,4 +39,11 @@ double Connection::GetWeight() const
 double Connection::GetOldWeight() const
 {
   return m_oldWeight;
+}
+
+std::ostream& Connection::Print(std::ostream& os) const
+{
+  Indent(os);
+  os << "Connection: oldWeight: " << m_oldWeight << ", weight: " << m_weight << "\n";
+  return os;
 }

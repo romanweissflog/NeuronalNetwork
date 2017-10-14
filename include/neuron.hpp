@@ -4,15 +4,16 @@
 #include "signal.hpp"
 #include "connection.h"
 #include "types.h"
+#include "common_interface.hpp"
 
 #include <vector>
 #include <memory>
 
 template<typename T>
-class Neuron
+class Neuron : Common
 {
 public:
-  Neuron(size_t idx = 0, NeuronType type = NeuronType::TypeUndef);
+  Neuron(size_t idx = 0, NeuronType type = NeuronType::TypeUndef, size_t ident = 0);
   virtual ~Neuron() = default;
   virtual T GetOuputValue() const;
   virtual T GetInputValue() const;
@@ -25,6 +26,7 @@ public:
   virtual void SetInputValue(double weight, T v);
   virtual void Process();
   virtual void Reset();
+  std::ostream& Print(std::ostream &os) const override;
 
 protected:
   ConnectedSignal<T> m_signal;
@@ -39,7 +41,7 @@ template<typename T>
 class InputNeuron : public Neuron<T>
 {
 public:
-  InputNeuron(size_t idx);
+  InputNeuron(size_t idx, size_t m_indent);
   void SetInputValue(double weight, T v) override;
   void Reset() override;
   void Connect(std::shared_ptr<Neuron> const &other) override;
@@ -50,7 +52,7 @@ template<typename T>
 class HiddenNeuron : public Neuron<T>
 {
 public:
-  HiddenNeuron(size_t idx);
+  HiddenNeuron(size_t idx, size_t m_indent);
   void SetInputValue(double weight, T v) override;
   void Process() override;
   void Reset() override;
@@ -65,7 +67,7 @@ template<typename T>
 class OutputNeuron : public Neuron<T>
 {
 public:
-  OutputNeuron(size_t idx);
+  OutputNeuron(size_t idx, size_t m_indent);
   void SetInputValue(double weight, T v) override;
   void Process() override;
   void Reset() override;
@@ -79,7 +81,7 @@ template<typename T>
 class BiasNeuron : public Neuron<T>
 {
 public:
-  BiasNeuron(size_t idx);
+  BiasNeuron(size_t idx, size_t m_indent);
   void Connect(std::shared_ptr<Neuron> const &other) override;
 };
 

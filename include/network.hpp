@@ -2,33 +2,35 @@
 #define NETWORK_HPP_
 
 #include "layer.hpp"
+#include "common_interface.hpp"
 
 #include <array>
 
-using Input = std::vector<double>;
-using Output = std::vector<double>;
-
-template<size_t Size>
-class Network
+template<size_t Size, typename T>
+class Network : Common
 {
   using Delta = std::vector<double>;
 
 public:
-  Network();
+  using Input = std::vector<T>;
+  using Output = std::vector<T>;
+
+public:
+  Network(size_t ident = 0);
   ~Network() = default;
   void ForwardPass(Input const &input);
   void BackwardPass(Output const &expected);
   Output GetOutput() const;
-  void DisplayInformation() const;
+  std::ostream& Print(std::ostream &os) const override;
 
 private:
   void Reset();
   void GenerateFullyConnected();
 
 private:
-  Layer<double> m_inputLayer;
-  Layer<double> m_outputLayer;
-  std::array<Layer<double>, Size> m_hiddenLayer;
+  Layer<T> m_inputLayer;
+  Layer<T> m_outputLayer;
+  std::array<Layer<T>, Size> m_hiddenLayer;
   Output m_currentOutput;
 };
 

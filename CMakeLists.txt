@@ -17,19 +17,21 @@ set(name OwnNetwork)
 add_executable(${name}
   include/config.h
   include/connection.h
+  include/common_interface.hpp
   include/functions.h
   include/layer.hpp
   include/layer_impl.hpp
   include/network.hpp
   include/network_impl.hpp
   include/neuron.hpp 
-  include/neuron_impl.hpp 
+  include/neuron_impl.hpp
   include/signal.hpp
   include/types.h
   src/config.cpp
   src/connection.cpp
   src/functions.cpp
-  src/own_network_main.cpp)
+  src/own_network_main.cpp
+  src/types.cpp)
 
 target_include_directories(${name} PUBLIC include)
 
