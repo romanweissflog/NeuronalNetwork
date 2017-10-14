@@ -17,14 +17,14 @@ template<size_t Size>
 Network<Size>::Network()
 {
   size_t neuronCount{};
-  m_inputLayer = Layer(2, NeuronType::TypeInput, neuronCount);  
+  m_inputLayer = Layer<double>(2, NeuronType::TypeInput, neuronCount);  
   neuronCount += 2;
   for (size_t i{}; i < Size; ++i)
   {
-    m_hiddenLayer[i] = Layer(2, NeuronType::TypeHidden, neuronCount);
+    m_hiddenLayer[i] = Layer<double>(2, NeuronType::TypeHidden, neuronCount);
     neuronCount += 2;
   }
-  m_outputLayer = Layer(2, NeuronType::TypeOutput, neuronCount);
+  m_outputLayer = Layer<double>(2, NeuronType::TypeOutput, neuronCount);
 
   GenerateFullyConnected();
 }
@@ -32,56 +32,31 @@ Network<Size>::Network()
 template<size_t Size>
 void Network<Size>::GenerateFullyConnected()
 {
-  if (Size == 0)
+  auto connect = [](Layer<double> &out, Layer<double> &in)
   {
-    for (size_t i{}; i < m_inputLayer.GetSize(); ++i)
+    for (auto &oN : out)
     {
-      for (size_t j{}; j < m_outputLayer.GetSize(); ++j)
+      for (auto &iN : in)
       {
-        if (m_outputLayer.GetNeuronType(j) != NeuronType::TypeBias)
+        if (iN->GetType() != NeuronType::TypeBias)
         {
-          m_inputLayer.GetNeuron(i)->Connect(m_outputLayer.GetNeuron(j));
+          oN->Connect(iN);
         }
       }
     }
+  };
+  if (Size == 0)
+  {
+    connect(m_inputLayer, m_outputLayer);
   }
   if (Size >= 1)
   {
-    for (size_t i{}; i < m_inputLayer.GetSize(); ++i)
-    {
-      for (size_t j{}; j < m_hiddenLayer[0].GetSize(); ++j)
-      {
-        if (m_hiddenLayer[0].GetNeuronType(j) != NeuronType::TypeBias)
-        {
-          m_inputLayer.GetNeuron(i)->Connect(m_hiddenLayer[0].GetNeuron(j));
-        }
-      }
-    }
-
+    connect(m_inputLayer, m_hiddenLayer[0]);
     for (size_t k = 1; k < Size - 1; ++k)
     {
-      for (size_t i{}; i < m_hiddenLayer[k].GetSize(); ++i)
-      {
-        for (size_t j{}; j < m_hiddenLayer[k + 1].GetSize(); ++j)
-        {
-          if (m_hiddenLayer[k + 1].GetNeuronType(j) != NeuronType::TypeBias)
-          {
-            m_hiddenLayer[k].GetNeuron(i)->Connect(m_hiddenLayer[k + 1].GetNeuron(j));
-          }
-        }
-      }
+      connect(m_hiddenLayer[k - 1], m_hiddenLayer[k]);
     }
-
-    for (size_t i{}; i < m_hiddenLayer[Size - 1].GetSize(); ++i)
-    {
-      for (size_t j{}; j < m_outputLayer.GetSize(); ++j)
-      {
-        if (m_outputLayer.GetNeuronType(j) != NeuronType::TypeBias)
-        {
-          m_hiddenLayer[Size - 1].GetNeuron(i)->Connect(m_outputLayer.GetNeuron(j));
-        }
-      }
-    }
+    connect(m_hiddenLayer[Size - 1], m_outputLayer);
   }
 }
 
@@ -96,6 +71,10 @@ void Network<Size>::ForwardPass(Input const &input)
   }
   for (size_t i{}; i < input.size(); ++i)
   {
+    if (m_inputLayer.GetNeuron(i)->GetType() == NeuronType::TypeBias)
+    {
+      continue;
+    }
     m_inputLayer.GetNeuron(i)->SetInputValue(1.0, input[i]);
   }
   m_inputLayer.Process();
@@ -109,10 +88,9 @@ void Network<Size>::ForwardPass(Input const &input)
 
   m_outputLayer.Process();
 
-  Output output;
   for (size_t i{}; i < m_outputLayer.GetSize(); ++i)
   {
-    output.push_back(m_outputLayer.GetNeuron(i)->GetOuputValue());
+    m_currentOutput.push_back(m_outputLayer.GetNeuron(i)->GetOuputValue());
   }
 }
 
@@ -120,6 +98,7 @@ template<size_t Size>
 void Network<Size>::Reset()
 {
   m_inputLayer.Reset();
+  m_currentOutput.clear();
 
   for (size_t i{}; i < Size; ++i)
   {
@@ -136,61 +115,66 @@ void Network<Size>::BackwardPass(Output const &expected)
   {
     throw std::runtime_error("Bad size of expected output vector");
   }
-  Delta deltaOutput;
-  deltaOutput.reserve(m_outputLayer.GetSize());
+  Delta delta;
   
   // get delta values for output layer
   size_t idx{};
   for (auto &&n : m_outputLayer)
   {
-    deltaOutput[idx] = first_derivate::Sigmoid(n->GetInputValue()) *
-      (expected[idx] - n->GetOuputValue());
+    delta.push_back(first_derivate::Sigmoid(n->GetInputValue()) *
+      (expected[idx] - n->GetOuputValue()));
     idx++;
   }
   
-  auto adaptWeights = [](Layer &layer, std::vector<double> const &delta)
+  auto adaptWeights = [](Layer<double> &layer, Delta const &deltas)
   {
-    for (auto &&d: delta)
+    for (size_t i{}; i < deltas.size(); ++i)
     {
       for (auto &&n : layer)
       {
-        double delta = constants::backwardEps * d * n->GetOuputValue();
-        n->GetSignal().AdaptWeight(delta);
+        double delta = constants::backwardEps * deltas[i] * n->GetOuputValue();
+        n->GetConnection(i).AdaptWeight(delta);
       }
     }
   };
 
   if (Size == 0)
   {
-    adaptWeights(m_inputLayer, deltaOutput);
+    adaptWeights(m_inputLayer, delta);
   }
   else
   {
-    adaptWeights(m_hiddenLayer[Size - 1], deltaOutput);
+    adaptWeights(m_hiddenLayer[Size - 1], delta);
 
-    auto getDelta = [](Layer const &layer, Delta const &nextDelta) -> Delta
+    auto getDelta = [](Layer<double> const &layer, Delta const &nextDelta) -> Delta
     {
-      size_t idx{};
-      Delta delta;
+      Delta deltas;
+      size_t nextSize = nextDelta.size();
       for (auto &&n : layer)
       {
+        if (n->GetType() == NeuronType::TypeBias)
+        {
+          continue;
+        }
         double sum = 0.0;
-        delta[idx] = first_derivate::Sigmoid(neuron->GetInputValue()) *
-          (expected[idx] - neuron->GetOuputValue());
-        idx++;
+        for (size_t i{}; i < nextSize; ++i)
+        {
+          sum += nextDelta[i] * n->GetConnection(i).GetOldWeight();
+        }
+        double delta = first_derivate::Sigmoid(n->GetInputValue()) * sum;
+        deltas.push_back(delta);
       }
-      return delta;
+      return deltas;
+    };
+
+    for (size_t i = Size - 1; i >= 1; --i)
+    {
+      delta = getDelta(m_hiddenLayer[i], delta);
+      adaptWeights(m_hiddenLayer[i - 1], delta);
     }
 
-    for (auto &&iNeuron : m_inputLayer)
-    {
-      count = 0U;
-      for (auto &&oNeuron : m_outputLayer)
-      {
-        delta = constants::backwardEps * deltaOutput[count] * iNeuron->GetOuputValue();
-        iNeuron->GetSignal().AdaptWeight(delta);
-      }
-    }
+    delta = getDelta(m_inputLayer, delta);
+    adaptWeights(m_inputLayer, delta);
   }
 }
 
@@ -198,6 +182,27 @@ template<size_t Size>
 Output Network<Size>::GetOutput() const
 {
   return m_currentOutput;
+}
+
+template<size_t Size>
+void Network<Size>::DisplayInformation() const
+{
+  auto print = [](Layer<double> const &l)
+  {
+    for (auto &&n : l)
+    {
+      std::cout << "  neuron: " << n->GetName() << " connection size: " << n->GetConnectionSize() << "\n";
+    }
+  };
+  std::cout << "INPUTLAYER\n";
+  print(m_inputLayer);
+  for (size_t i{}; i < Size; ++i)
+  {
+    std::cout << "HIDDENLAYER" + std::to_string(i) << "\n";
+    print(m_hiddenLayer[i]);
+  }
+  std::cout << "OUTPUTLAYER\n";
+  print(m_outputLayer);
 }
 
 #endif

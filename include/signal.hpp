@@ -2,6 +2,7 @@
 #define SIGNAL_HPP_
 
 #include "types.h"
+#include "connection.h"
 
 #include <memory>
 #include <vector>
@@ -20,12 +21,8 @@ public:
 
   virtual ~Signal() = default;
 
-  void Connect(Slot const &slot)
-  {
-    m_slots.push_back(slot);
-  }
-
-  virtual void Emit(T) = 0;
+  virtual void Connect(Slot const &slot) = 0;
+  virtual void Emit(T const &v) = 0;
 
   size_t GetIdx() const
   {
@@ -33,23 +30,52 @@ public:
   }
 
 protected:
-  std::vector<Slot> m_slots;
   size_t m_idx;
-};
-
-class WeightedSignal : public Signal<double, double>
-{
-public:
-  WeightedSignal(size_t idx = 0);
-  void Emit(double val) override;
-  void AdaptWeight(double delta);
-  double GetOldWeight() const;
 
 private:
-  double m_oldWeight;
-  double m_weight;
+  std::vector<Slot> m_slots;
 };
 
-#include "signal_impl.hpp"
+
+template<typename T>
+class ConnectedSignal : public Signal<double, T>
+{
+  using ConnectedSlot = std::vector<std::pair<Connection, Slot>>;
+public:
+  ConnectedSignal(size_t idx)
+    : Signal(idx)
+  {}
+
+  virtual void Connect(Slot const &slot)
+  {
+    Connection conn(1.0);
+    m_slots.emplace_back(conn, slot);
+  }
+
+  virtual void Emit(T const &v)
+  {
+    for (auto &&s : m_slots)
+    {
+      s.second(s.first.GetWeight(), v);
+    }
+  }
+
+  virtual size_t GetConnectionSize() const
+  {
+    return m_slots.size();
+  }
+
+  Connection& GetConnection(size_t idx)
+  {
+    if (idx >= m_slots.size())
+    {
+      throw std::runtime_error("Bad index for connection");
+    }
+    return m_slots[idx].first;
+  }
+
+private:
+  ConnectedSlot m_slots;
+};
 
 #endif

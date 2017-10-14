@@ -19,15 +19,16 @@ public:
   void ForwardPass(Input const &input);
   void BackwardPass(Output const &expected);
   Output GetOutput() const;
+  void DisplayInformation() const;
 
 private:
   void Reset();
   void GenerateFullyConnected();
 
 private:
-  Layer m_inputLayer;
-  Layer m_outputLayer;
-  std::array<Layer, Size> m_hiddenLayer;
+  Layer<double> m_inputLayer;
+  Layer<double> m_outputLayer;
+  std::array<Layer<double>, Size> m_hiddenLayer;
   Output m_currentOutput;
 };
 

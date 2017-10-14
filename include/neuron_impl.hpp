@@ -15,13 +15,15 @@ namespace
     case NeuronType::TypeInput: return "Input";
     case NeuronType::TypeHidden: return "Hidden";
     case NeuronType::TypeOutput: return "Output";
+    case NeuronType::TypeBias: return "Bias";
     default:
       throw std::runtime_error("Unknown Neuron Type");
     }
   }
 }
 
-Neuron::Neuron(size_t idx, NeuronType type)
+template<typename T>
+Neuron<T>::Neuron(size_t idx, NeuronType type)
   : m_idx(idx)
   , m_type(type)
   , m_signal(idx)
@@ -29,127 +31,167 @@ Neuron::Neuron(size_t idx, NeuronType type)
   , m_output(1.0)
 {}
 
-double Neuron::GetOuputValue() const
+template<typename T>
+T Neuron<T>::GetOuputValue() const
 {
   return m_output;
 }
 
-double Neuron::GetInputValue() const
+template<typename T>
+T Neuron<T>::GetInputValue() const
 {
   return m_input;
 }
 
-WeightedSignal Neuron::GetSignal(size_t idx)
+template<typename T>
+Connection& Neuron<T>::GetConnection(size_t idx)
 {
-  return m_signal;
+  return m_signal.GetConnection(idx);
 }
 
-std::string Neuron::GetName() const
+template<typename T>
+std::string Neuron<T>::GetName() const
 {
   return to_string(m_type) + "_" + std::to_string(m_idx);
 }
 
-NeuronType Neuron::GetType() const
+template<typename T>
+NeuronType Neuron<T>::GetType() const
 {
   return m_type;
 }
 
-void Neuron::Connect(std::shared_ptr<Neuron> const &)
-{}
+template<typename T>
+size_t Neuron<T>::GetConnectionSize() const
+{
+  return m_signal.GetConnectionSize();
+}
 
-void Neuron::operator()()
+template<typename T>
+void Neuron<T>::Connect(std::shared_ptr<Neuron> const &)
+{
+  throw std::exception("Neuron<T>::Connect not implemented");
+}
+
+template<typename T>
+void Neuron<T>::operator()()
 {
   m_signal.Emit(m_output);
 }
 
-void Neuron::SetInputValue(double, double)
+template<typename T>
+void Neuron<T>::SetInputValue(double, T)
 {
-
+  throw std::exception("Neuron<T>::SetInputValue not implemented");
 }
 
-void Neuron::Process()
+template<typename T>
+void Neuron<T>::Process()
 {
-
+  throw std::exception("Neuron<T>::Process not implemented");
 }
 
-void Neuron::Reset()
+template<typename T>
+void Neuron<T>::Reset()
 {
-
+  
 }
 
 
-InputNeuron::InputNeuron(size_t idx = 0)
-  : Neuron(idx, NeuronType::TypeInput)
+template<typename T>
+InputNeuron<T>::InputNeuron(size_t idx)
+  : Neuron<T>(idx, NeuronType::TypeInput)
 {}
 
-void InputNeuron::SetInputValue(double weight, double v)
+template<typename T>
+void InputNeuron<T>::SetInputValue(double weight, T v)
 {
   m_input = weight * v;
   m_output = weight * v;
 }
 
-void InputNeuron::Reset()
+template<typename T>
+void InputNeuron<T>::Reset()
 {
   m_input = -1.0;
   m_output = 1.0;
 }
 
-void InputNeuron::Connect(std::shared_ptr<Neuron> const &other)
+template<typename T>
+void InputNeuron<T>::Connect(std::shared_ptr<Neuron> const &other)
 {
   m_signal.Connect(std::bind(&Neuron::SetInputValue, other, std::placeholders::_1, std::placeholders::_2));
 }
 
 
-HiddenNeuron::HiddenNeuron(size_t idx = 0)
-  : Neuron(idx, NeuronType::TypeHidden)
+template<typename T>
+HiddenNeuron<T>::HiddenNeuron(size_t idx)
+  : Neuron<T>(idx, NeuronType::TypeHidden)
 {}
 
-void HiddenNeuron::SetInputValue(double weight, double v)
+template<typename T>
+void HiddenNeuron<T>::SetInputValue(double weight, T v)
 {
   m_inputValues.emplace_back(WeightedInput{ weight, v });
 }
 
-void HiddenNeuron::Process()
+template<typename T>
+void HiddenNeuron<T>::Process()
 {
   m_input = transfer_function::LinearSum(m_inputValues);
   m_output = activation_function::Identity(m_input);
 }
 
-void HiddenNeuron::Reset()
+template<typename T>
+void HiddenNeuron<T>::Reset()
 {
   m_inputValues.clear();
 }
 
-void HiddenNeuron::Connect(std::shared_ptr<Neuron> const &other)
+template<typename T>
+void HiddenNeuron<T>::Connect(std::shared_ptr<Neuron> const &other)
 {
   m_signal.Connect(std::bind(&Neuron::SetInputValue, other, std::placeholders::_1, std::placeholders::_2));
 }
 
 
-OutputNeuron::OutputNeuron(size_t idx = 0)
-  : Neuron(idx, NeuronType::TypeOutput)
+template<typename T>
+OutputNeuron<T>::OutputNeuron(size_t idx)
+  : Neuron<T>(idx, NeuronType::TypeOutput)
 {}
 
-void OutputNeuron::SetInputValue(double weight, double v)
+template<typename T>
+void OutputNeuron<T>::SetInputValue(double weight, T v)
 {
   m_inputValues.emplace_back(WeightedInput{ weight, v });
 }
 
-void OutputNeuron::Process()
+template<typename T>
+void OutputNeuron<T>::Process()
 {
   m_input = transfer_function::LinearSum(m_inputValues);
   m_output = activation_function::Identity(m_input);
 }
 
-void OutputNeuron::Reset()
+template<typename T>
+void OutputNeuron<T>::Reset()
 {
   m_inputValues.clear();
 }
 
-BiasNeuron::BiasNeuron(size_t idx)
-  : Neuron(idx, NeuronType::TypeBias)
+
+template<typename T>
+BiasNeuron<T>::BiasNeuron(size_t idx)
+  : Neuron<T>(idx, NeuronType::TypeBias)
 {
+  m_input = 1.0;
   m_output = 1.0;
+}
+
+template<typename T>
+void BiasNeuron<T>::Connect(std::shared_ptr<Neuron> const &other)
+{
+  m_signal.Connect(std::bind(&Neuron::SetInputValue, other, std::placeholders::_1, std::placeholders::_2));
 }
 
 #endif

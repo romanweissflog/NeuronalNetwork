@@ -2,49 +2,56 @@
 #define NEURON_HPP_
 
 #include "signal.hpp"
+#include "connection.h"
 #include "types.h"
 
 #include <vector>
 #include <memory>
 
+template<typename T>
 class Neuron
 {
 public:
   Neuron(size_t idx = 0, NeuronType type = NeuronType::TypeUndef);
   virtual ~Neuron() = default;
-  virtual double GetOuputValue() const;
-  virtual double GetInputValue() const;
-  virtual WeightedSignal GetSignal(size_t idx);
+  virtual T GetOuputValue() const;
+  virtual T GetInputValue() const;
+  virtual Connection& GetConnection(size_t idx);
+  virtual size_t GetConnectionSize() const;
   std::string GetName() const;
   NeuronType GetType() const;
   virtual void Connect(std::shared_ptr<Neuron> const &other);
   virtual void operator()();
-  virtual void SetInputValue(double weight, double v);
+  virtual void SetInputValue(double weight, T v);
   virtual void Process();
   virtual void Reset();
 
 protected:
-  WeightedSignal m_signal;
+  ConnectedSignal<T> m_signal;
   size_t m_idx;
   NeuronType m_type;
-  double m_input;
-  double m_output;
+  T m_input;
+  T m_output;
 };
 
-class InputNeuron : public Neuron
+
+template<typename T>
+class InputNeuron : public Neuron<T>
 {
 public:
   InputNeuron(size_t idx);
-  void SetInputValue(double weight, double v) override;
+  void SetInputValue(double weight, T v) override;
   void Reset() override;
   void Connect(std::shared_ptr<Neuron> const &other) override;
 };
 
-class HiddenNeuron : public Neuron
+
+template<typename T>
+class HiddenNeuron : public Neuron<T>
 {
 public:
   HiddenNeuron(size_t idx);
-  void SetInputValue(double weight, double v) override;
+  void SetInputValue(double weight, T v) override;
   void Process() override;
   void Reset() override;
   void Connect(std::shared_ptr<Neuron> const &other) override;
@@ -53,11 +60,13 @@ private:
   std::vector<WeightedInput> m_inputValues;
 };
 
-class OutputNeuron : public Neuron
+
+template<typename T>
+class OutputNeuron : public Neuron<T>
 {
 public:
   OutputNeuron(size_t idx);
-  void SetInputValue(double weight, double v) override;
+  void SetInputValue(double weight, T v) override;
   void Process() override;
   void Reset() override;
 
@@ -65,10 +74,13 @@ private:
   std::vector<WeightedInput> m_inputValues;
 };
 
-class BiasNeuron : public Neuron
+
+template<typename T>
+class BiasNeuron : public Neuron<T>
 {
 public:
   BiasNeuron(size_t idx);
+  void Connect(std::shared_ptr<Neuron> const &other) override;
 };
 
 #include "neuron_impl.hpp"

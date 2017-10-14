@@ -1,32 +1,34 @@
 #ifndef LAYER_IMPL_HPP_
 #define LAYER_IMPL_HPP_
 
-Layer::Layer()
+template<typename T>
+Layer<T>::Layer()
 {
 
 }
 
-Layer::Layer(size_t nrNeurons, NeuronType const &type, size_t neuronNumber)
+template<typename T>
+Layer<T>::Layer(size_t nrNeurons, NeuronType const &type, size_t neuronNumber)
   : m_type(type)
 {
   if (type == NeuronType::TypeInput || type == NeuronType::TypeHidden)
   {
-    m_neurons.emplace_back(std::make_shared<BiasNeuron>(neuronNumber));
+    m_neurons.emplace_back(std::make_shared<BiasNeuron<T>>(neuronNumber));
     neuronNumber++;
   }
   for (size_t i{}; i < nrNeurons; ++i, ++neuronNumber)
   {
     if (type == NeuronType::TypeInput)
     {
-      m_neurons.emplace_back(std::make_shared<InputNeuron>(neuronNumber));
+      m_neurons.emplace_back(std::make_shared<InputNeuron<T>>(neuronNumber));
     }
     else if (type == NeuronType::TypeHidden)
     {
-      m_neurons.emplace_back(std::make_shared<HiddenNeuron>(neuronNumber));
+      m_neurons.emplace_back(std::make_shared<HiddenNeuron<T>>(neuronNumber));
     }
     else if (type == NeuronType::TypeOutput)
     {
-      m_neurons.emplace_back(std::make_shared<OutputNeuron>(neuronNumber));
+      m_neurons.emplace_back(std::make_shared<OutputNeuron<T>>(neuronNumber));
     }
     else
     {
@@ -35,7 +37,8 @@ Layer::Layer(size_t nrNeurons, NeuronType const &type, size_t neuronNumber)
   }
 }
 
-std::shared_ptr<Neuron> Layer::GetNeuron(size_t idx)
+template<typename T>
+std::shared_ptr<Neuron<T>> Layer<T>::GetNeuron(size_t idx)
 {
   if (idx >= m_neurons.size())
   {
@@ -44,7 +47,8 @@ std::shared_ptr<Neuron> Layer::GetNeuron(size_t idx)
   return m_neurons[idx];
 }
 
-NeuronType Layer::GetNeuronType(size_t idx) const
+template<typename T>
+NeuronType Layer<T>::GetNeuronType(size_t idx) const
 {
   if (idx >= m_neurons.size())
   {
@@ -53,20 +57,26 @@ NeuronType Layer::GetNeuronType(size_t idx) const
   return m_neurons[idx]->GetType();
 }
 
-size_t Layer::GetSize() const
+template<typename T>
+size_t Layer<T>::GetSize() const
 {
   return m_neurons.size();
 }
 
-void Layer::Process()
+template<typename T>
+void Layer<T>::Process()
 {
   for (auto &&n : m_neurons)
   {
-    n->Process();
+    if (n->GetType() != NeuronType::TypeBias && n->GetType() != NeuronType::TypeInput)
+    {
+      n->Process();
+    }
   }
 }
 
-void Layer::operator()()
+template<typename T>
+void Layer<T>::operator()()
 {
   for (auto &&n : m_neurons)
   {
@@ -74,7 +84,8 @@ void Layer::operator()()
   }
 }
 
-void Layer::Reset()
+template<typename T>
+void Layer<T>::Reset()
 {
   for (auto &&n : m_neurons)
   {
@@ -82,24 +93,16 @@ void Layer::Reset()
   }
 }
 
-Layer::iterator Layer::begin()
+template<typename T>
+typename Layer<T>::const_iterator Layer<T>::begin() const
 {
   return std::begin(m_neurons);
 }
 
-Layer::iterator Layer::end()
+template<typename T>
+typename Layer<T>::const_iterator Layer<T>::end() const
 {
   return std::end(m_neurons);
-}
-
-Layer::const_iterator Layer::cbegin() const
-{
-  return std::cbegin(m_neurons);
-}
-
-Layer::const_iterator Layer::cend() const
-{
-  return std::cend(m_neurons);
 }
 
 #endif

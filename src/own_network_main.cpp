@@ -8,6 +8,7 @@ int main()
   try
   {
     Network<1> network;
+    network.DisplayInformation();
     Input input{ 1.0, 1.0 };
     network.ForwardPass(input);
     auto const output = network.GetOutput();
@@ -24,6 +25,7 @@ int main()
   }
   catch (...)
   {
+    std::cout << "unknown exception\n";
     return -1;
   }
   return 0;
