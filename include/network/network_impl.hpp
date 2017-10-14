@@ -16,16 +16,17 @@ namespace
 namespace network
 {
 
-  template<size_t Size, typename T>
-  Network<Size, T>::Network(size_t indent)
+  template<typename T>
+  Network<T>::Network(size_t nrHiddenLayer, size_t indent)
     : Common(indent)
+    , m_hiddenLayerSize(nrHiddenLayer)
   {
     size_t neuronCount{};
     m_inputLayer = Layer<T>(2, NeuronType::TypeInput, neuronCount, m_indent + 2);
     neuronCount += 3;
-    for (size_t i{}; i < Size; ++i)
+    for (size_t i{}; i < m_hiddenLayerSize; ++i)
     {
-      m_hiddenLayer[i] = Layer<T>(2, NeuronType::TypeHidden, neuronCount, m_indent + 2);
+      m_hiddenLayer.push_back(Layer<T>(2, NeuronType::TypeHidden, neuronCount, m_indent + 2));
       neuronCount += 3;
     }
     m_outputLayer = Layer<T>(2, NeuronType::TypeOutput, neuronCount, m_indent + 2);
@@ -33,8 +34,8 @@ namespace network
     GenerateFullyConnected();
   }
 
-  template<size_t Size, typename T>
-  void Network<Size, T>::GenerateFullyConnected()
+  template<typename T>
+  void Network<T>::GenerateFullyConnected()
   {
     auto connect = [](Layer<T> &out, Layer<T> &in)
     {
@@ -49,23 +50,23 @@ namespace network
         }
       }
     };
-    if (Size == 0)
+    if (m_hiddenLayerSize == 0)
     {
       connect(m_inputLayer, m_outputLayer);
     }
-    if (Size >= 1)
+    if (m_hiddenLayerSize >= 1)
     {
       connect(m_inputLayer, m_hiddenLayer[0]);
-      for (size_t k = 1; k < Size - 1; ++k)
+      for (size_t k = 1; k < m_hiddenLayerSize - 1; ++k)
       {
         connect(m_hiddenLayer[k - 1], m_hiddenLayer[k]);
       }
-      connect(m_hiddenLayer[Size - 1], m_outputLayer);
+      connect(m_hiddenLayer[m_hiddenLayerSize - 1], m_outputLayer);
     }
   }
 
-  template<size_t Size, typename T>
-  void Network<Size, T>::ForwardPass(Input const &input)
+  template<typename T>
+  void Network<T>::ForwardPass(Input const &input)
   {
     Reset();
 
@@ -84,7 +85,7 @@ namespace network
     m_inputLayer.Process();
     m_inputLayer();
 
-    for (size_t i{}; i < Size; ++i)
+    for (size_t i{}; i < m_hiddenLayerSize; ++i)
     {
       m_hiddenLayer[i].Process();
       m_hiddenLayer[i]();
@@ -98,13 +99,13 @@ namespace network
     }
   }
 
-  template<size_t Size, typename T>
-  void Network<Size, T>::Reset()
+  template<typename T>
+  void Network<T>::Reset()
   {
     m_inputLayer.Reset();
     m_currentOutput.clear();
 
-    for (size_t i{}; i < Size; ++i)
+    for (size_t i{}; i < m_hiddenLayerSize; ++i)
     {
       m_hiddenLayer[i].Reset();
     }
@@ -112,8 +113,8 @@ namespace network
     m_outputLayer.Reset();
   }
 
-  template<size_t Size, typename T>
-  void Network<Size, T>::BackwardPass(Output const &expected)
+  template<typename T>
+  void Network<T>::BackwardPass(Output const &expected)
   {
     if (expected.size() != m_outputLayer.GetSize())
     {
@@ -142,13 +143,13 @@ namespace network
       }
     };
 
-    if (Size == 0)
+    if (m_hiddenLayerSize == 0)
     {
       adaptWeights(m_inputLayer, delta);
     }
     else
     {
-      adaptWeights(m_hiddenLayer[Size - 1], delta);
+      adaptWeights(m_hiddenLayer[m_hiddenLayerSize - 1], delta);
 
       auto getDelta = [](Layer<T> const &layer, Delta const &nextDelta) -> Delta
       {
@@ -171,7 +172,7 @@ namespace network
         return deltas;
       };
 
-      for (size_t i = Size - 1; i >= 1; --i)
+      for (size_t i = m_hiddenLayerSize - 1; i >= 1; --i)
       {
         delta = getDelta(m_hiddenLayer[i], delta);
         adaptWeights(m_hiddenLayer[i - 1], delta);
@@ -182,19 +183,19 @@ namespace network
     }
   }
 
-  template<size_t Size, typename T>
-  typename Network<Size, T>::Output Network<Size, T>::GetOutput() const
+  template<typename T>
+  typename Network<T>::Output Network<T>::GetOutput() const
   {
     return m_currentOutput;
   }
 
-  template<size_t Size, typename T>
-  std::ostream& Network<Size, T>::Print(std::ostream &os) const
+  template<typename T>
+  std::ostream& Network<T>::Print(std::ostream &os) const
   {
     Indent(os);
     os << "Network\n";
     os << m_inputLayer;
-    for (size_t i{}; i < Size; ++i)
+    for (size_t i{}; i < m_hiddenLayerSize; ++i)
     {
       os << m_hiddenLayer[i];
     }
@@ -202,32 +203,32 @@ namespace network
     return os;
   }
 
-  template<size_t Size, typename T>
-  NetworkWeights Network<Size, T>::GetWeights() const
+  template<typename T>
+  NetworkWeights Network<T>::GetWeights() const
   {
     NetworkWeights weights;
     weights.emplace_back(0, m_inputLayer.GetWeights());
-    for (size_t i{}; i < Size; ++i)
+    for (size_t i{}; i < m_hiddenLayerSize; ++i)
     {
       weights.emplace_back(i + 1, m_hiddenLayer[i].GetWeights());
     }
-    weights.emplace_back(Size + 1, m_outputLayer.GetWeights());
+    weights.emplace_back(m_hiddenLayerSize + 1, m_outputLayer.GetWeights());
     return weights;
   }
 
-  template<size_t Size, typename T>
-  void Network<Size, T>::SetWeights(NetworkWeights const &weights)
+  template<typename T>
+  void Network<T>::SetWeights(NetworkWeights const &weights)
   {
-    if (weights.size() != Size + 2)
+    if (weights.size() != m_hiddenLayerSize + 2)
     {
       throw std::runtime_error("Bad input size for network weights");
     }
     m_inputLayer.SetWeights(weights[0].second);
-    for (size_t i{}; i < Size; ++i)
+    for (size_t i{}; i < m_hiddenLayerSize; ++i)
     {
       m_hiddenLayer[i].SetWeights(weights[i + 1].second);
     }
-    m_outputLayer.SetWeights(weights[Size + 1].second);
+    m_outputLayer.SetWeights(weights[m_hiddenLayerSize + 1].second);
   }
 }
 

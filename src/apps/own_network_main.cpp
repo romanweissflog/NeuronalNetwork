@@ -6,11 +6,11 @@
 int main()
 {
   using namespace network;
-  using DNetwork = Network<1, double>;
+  using DNetwork = Network<double>;
   try
   {
     // create check
-    DNetwork network;
+    DNetwork network(1U);
     std::cout << network << "\n";
 
     // forward pass check

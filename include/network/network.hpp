@@ -8,7 +8,7 @@
 
 namespace network
 {
-  template<size_t Size, typename T>
+  template<typename T>
   class Network : Common
   {
     using Delta = std::vector<double>;
@@ -18,7 +18,7 @@ namespace network
     using Output = std::vector<T>;
 
   public:
-    Network(size_t ident = 0);
+    Network(size_t nrHidden = 0, size_t ident = 0);
     ~Network() = default;
     void ForwardPass(Input const &input);
     void BackwardPass(Output const &expected);
@@ -32,9 +32,10 @@ namespace network
     void GenerateFullyConnected();
 
   private:
+    size_t m_hiddenLayerSize;
     Layer<T> m_inputLayer;
     Layer<T> m_outputLayer;
-    std::array<Layer<T>, Size> m_hiddenLayer;
+    std::vector<Layer<T>> m_hiddenLayer;
     Output m_currentOutput;
   };
 }
