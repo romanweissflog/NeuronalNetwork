@@ -1,4 +1,4 @@
-#include "functions.h"
+#include "network/functions.h"
 #include <algorithm>
 
 namespace transfer_function

@@ -1,4 +1,4 @@
-#include "types.h"
+#include "network/types.h"
 
 std::string to_string(NeuronType type)
 {

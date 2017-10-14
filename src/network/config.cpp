@@ -1,4 +1,4 @@
-#include "config.h"
+#include "network/config.h"
 
 #include <fstream>
 

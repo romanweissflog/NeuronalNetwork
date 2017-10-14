@@ -1,4 +1,4 @@
-#include "connection.h"
+#include "network/connection.h"
 
 #include <random>
 
