@@ -5,6 +5,7 @@
 
 int main()
 {
+  using namespace network;
   using DNetwork = Network<1, double>;
   try
   {
@@ -12,12 +13,10 @@ int main()
     std::cout << network << "\n";
     DNetwork::Input input{ 1.0, 1.0 };
     network.ForwardPass(input);
+    std::cout << network << "\n";
     auto const output = network.GetOutput();
-    //for (auto &&o : output)
-    //{
-    //  std::cout << o << "\n";
-    //}
     network.BackwardPass(output);
+    std::cout << network << "\n";
   }
   catch (std::runtime_error e)
   {
