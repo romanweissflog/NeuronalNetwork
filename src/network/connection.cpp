@@ -39,6 +39,12 @@ namespace network
     return m_weight;
   }
 
+  void Connection::SetWeight(double weight)
+  {
+    m_oldWeight = weight;
+    m_weight = weight;
+  }
+
   double Connection::GetOldWeight() const
   {
     return m_oldWeight;

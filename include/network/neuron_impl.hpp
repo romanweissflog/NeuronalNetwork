@@ -48,6 +48,12 @@ namespace network
   }
 
   template<typename T>
+  size_t Neuron<T>::GetIndex() const
+  {
+    return m_idx;
+  }
+
+  template<typename T>
   size_t Neuron<T>::GetConnectionSize() const
   {
     return m_signal.GetConnectionSize();
@@ -191,6 +197,18 @@ namespace network
   void BiasNeuron<T>::Connect(std::shared_ptr<Neuron<T>> const &other)
   {
     m_signal.Connect(std::bind(&Neuron::SetInputValue, other, std::placeholders::_1, std::placeholders::_2));
+  }
+
+  template<typename T>
+  NeuronWeights Neuron<T>::GetWeights() const
+  {
+    return m_signal.GetWeights();
+  }
+
+  template<typename T>
+  void Neuron<T>::SetWeights(NeuronWeights const &weights)
+  {
+    m_signal.SetWeights(weights);
   }
 }
 

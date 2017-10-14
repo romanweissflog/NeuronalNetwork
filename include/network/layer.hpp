@@ -27,6 +27,8 @@ namespace network
     void operator()();
     void Reset();
     std::ostream& Print(std::ostream &os) const override;
+    LayerWeights GetWeights() const;
+    void SetWeights(LayerWeights const &weights);
 
     const_iterator begin() const;
     const_iterator end() const;

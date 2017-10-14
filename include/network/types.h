@@ -3,6 +3,12 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
+
+// Common used usings
+using NeuronWeights = std::vector<double>;
+using LayerWeights = std::vector<std::pair<size_t, NeuronWeights>>;
+using NetworkWeights = std::vector<std::pair<size_t, LayerWeights>>;
 
 struct EmptyInput
 {};

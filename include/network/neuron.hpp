@@ -23,13 +23,16 @@ namespace network
     virtual size_t GetConnectionSize() const;
     std::string GetName() const;
     NeuronType GetType() const;
+    size_t GetIndex() const;
     virtual void Connect(std::shared_ptr<Neuron> const &other);
     virtual void operator()();
     virtual void SetInputValue(double weight, T v);
     virtual void Process();
     virtual void Reset();
     std::ostream& Print(std::ostream &os) const override;
-
+    NeuronWeights GetWeights() const;
+    void SetWeights(NeuronWeights const &weights);
+    
   protected:
     ConnectedSignal<T> m_signal;
     size_t m_idx;

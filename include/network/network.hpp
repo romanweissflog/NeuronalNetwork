@@ -24,6 +24,8 @@ namespace network
     void BackwardPass(Output const &expected);
     Output GetOutput() const;
     std::ostream& Print(std::ostream &os) const override;
+    NetworkWeights GetWeights() const;
+    void SetWeights(NetworkWeights const &weights);
 
   private:
     void Reset();

@@ -201,6 +201,34 @@ namespace network
     os << m_outputLayer;
     return os;
   }
+
+  template<size_t Size, typename T>
+  NetworkWeights Network<Size, T>::GetWeights() const
+  {
+    NetworkWeights weights;
+    weights.emplace_back(0, m_inputLayer.GetWeights());
+    for (size_t i{}; i < Size; ++i)
+    {
+      weights.emplace_back(i + 1, m_hiddenLayer[i].GetWeights());
+    }
+    weights.emplace_back(Size + 1, m_outputLayer.GetWeights());
+    return weights;
+  }
+
+  template<size_t Size, typename T>
+  void Network<Size, T>::SetWeights(NetworkWeights const &weights)
+  {
+    if (weights.size() != Size + 2)
+    {
+      throw std::runtime_error("Bad input size for network weights");
+    }
+    m_inputLayer.SetWeights(weights[0].second);
+    for (size_t i{}; i < Size; ++i)
+    {
+      m_hiddenLayer[i].SetWeights(weights[i + 1].second);
+    }
+    m_outputLayer.SetWeights(weights[Size + 1].second);
+  }
 }
 
 #endif

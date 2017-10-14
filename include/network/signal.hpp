@@ -86,6 +86,30 @@ namespace network
       return std::end(m_slots);
     }
 
+    NeuronWeights GetWeights() const
+    {
+      NeuronWeights weights;
+      for (auto &&s : m_slots)
+      {
+        weights.push_back(s.first.GetWeight());
+      }
+      return weights;
+    }
+
+    void SetWeights(NeuronWeights const &weights)
+    {
+      if (weights.size() != m_slots.size())
+      {
+        throw std::runtime_error("Bad input size for connection weights");
+      }
+      size_t idx{};
+      for (auto &&s : m_slots)
+      {
+        s.first.SetWeight(weights[idx]);
+        idx++;
+      }
+    }
+
   private:
     ConnectedSlot m_slots;
   };

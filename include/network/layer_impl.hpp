@@ -119,6 +119,32 @@ namespace network
     }
     return os;
   }
+
+  template<typename T>
+  LayerWeights Layer<T>::GetWeights() const
+  {
+    LayerWeights weights;
+    for (auto &&n : m_neurons)
+    {
+      weights.emplace_back(n->GetIndex(), n->GetWeights());
+    }
+    return weights;
+  }
+
+  template<typename T>
+  void Layer<T>::SetWeights(LayerWeights const &weights)
+  {
+    if (weights.size() != m_neurons.size())
+    {
+      throw std::runtime_error("Bad input size for layer weights");
+    }
+    size_t idx{};
+    for (auto &&n : m_neurons)
+    {
+      n->SetWeights(weights[idx].second);
+      idx++;
+    }
+  }
 }
 
 #endif
