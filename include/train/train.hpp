@@ -5,7 +5,6 @@
 #include "network/types.h"
 #include "learn_data.hpp"
 #include "eval.hpp"
-#include "adapt.hpp"
 
 namespace train
 {
@@ -16,11 +15,10 @@ namespace train
     using U = OutputType;
   public:
     Train(size_t hiddenLayerSize = 0U);
-    network::NetworkWeights operator()(LearnData<T, U> const &data, double percentageTrain);
+    network::NetworkWeights operator()(LearnSet<T, U> const &data, double percentageTrain);
 
   private:
     network::Network<T> m_network;
-    Adapt<T, U> m_adapt;
     Eval<U> m_eval;
   };
 }

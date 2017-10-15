@@ -2,21 +2,27 @@
 #define CONFIG_H_
 
 #include <vector>
+#include "types.h"
 
-struct Layer
+namespace network
 {
-  size_t nrNeurons;
-  std::string neuronType;
-  std::string transferFunction;
-  std::string activationFunction;
-};
+  // tbd: use boost::optional for some variables
+  struct LayerConfig
+  {
+    size_t nrNeurons;
+    bool withBias;
+    NeuronType type;
+    TransferFunctionType transferFunction;
+    ActivationFunctionType activationFunction;
+  };
 
-struct Config
-{
-  std::string networkType;
-  std::vector<Layer> layers;
-};
+  struct Config
+  {
+    NetworkType networkType;
+    std::vector<LayerConfig> layers;
+  };
 
-Config ReadConfig(std::string const &path);
+  Config GetConfig(std::string const &path);
+}
 
 #endif

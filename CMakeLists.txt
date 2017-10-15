@@ -39,7 +39,6 @@ set(network_src
 source_group(Lib\\network\\src FILES ${network_src})
 
 set(train_include
-  include/train/adapt.hpp
   include/train/eval.hpp
   include/train/train.hpp
   include/train/learn_data.hpp

@@ -19,46 +19,38 @@ namespace train
   template<typename T, typename U>
   Train<T, U>::Train(size_t hiddenLayerSize)
     : m_network(hiddenLayerSize)
-    , m_adapt(m_network)
   {}
 
   template<typename T, typename U>
-  network::NetworkWeights Train<T, U>::operator()(LearnData<T, U> const &data, double percentageTrain)
+  network::NetworkWeights Train<T, U>::operator()(typename LearnSet<T, U> const &data, double percentageTrain)
   {
     // prepare data
     if (percentageTrain < 0 || percentageTrain > 1)
     {
       throw std::runtime_error("Bad percentage for train data");
     }
-
-    if (data.input.size() != data.groundTruth.size())
-    {
-      throw std::runtime_error("Bad input size for train data");
-    }
-
+    
     // fill data
     std::default_random_engine re;
     std::uniform_real_distribution<double> gen(0.0, 1.0);
-    LearnData<T, U> learnData, evalData;
-    for (size_t i{}; i < data.input.size(); ++i)
+    LearnSet<T, U> trainData, evalData;
+    for (size_t i{}; i < data.size(); ++i)
     {
       double v = gen(re);
-      if (v > percentageTrain)
+      if (v <= percentageTrain)
       {
-        learnData.input.push_back(data.input[i]);
-        learnData.groundTruth.push_back(data.groundTruth[i]);
+        trainData.push_back(data[i]);
       }
       else
       {
-        evalData.input.push_back(data.input[i]);
-        evalData.groundTruth.push_back(data.groundTruth[i]);
+        evalData.push_back(data[i]);
       }
     }
 
     auto backupWeights = m_network.GetWeights();
-    auto lastOutput = m_network.GetOutput();
     auto lastResult = 0.0;
-    EvalData<U> performanceData;
+    EvalSet<U> trainEvalSet;
+    EvalSet<U> evalSet;
     for (size_t i{}; i <= constants::maxIter; ++i)
     {
       if (i == constants::maxIter)
@@ -67,18 +59,29 @@ namespace train
         break;
       }
 
-      m_adapt(learnData);
+      for (auto &&d : trainData)
+      {
+        m_network.ForwardPass(d.input);
+        m_network.BackwardPass(d.groundTruth);
+      }
 
-      lastOutput = m_network.GetOutput();
-      performanceData = EvalData<U>{ lastOutput, learnData.groundTruth };
-      double learnResult = m_eval(performanceData);
+      trainEvalSet.clear();
+      for (auto &&d : trainData)
+      {
+        m_network.ForwardPass(d.input);
+        trainEvalSet.emplace_back(EvalData<U>{ m_network.GetOutput(), d.groundTruth });
+      }
+      double trainResult = m_eval(trainEvalSet);
+      std::cout << "Result on train dataset: " << trainResult << "\n";
 
-      std::cout << "Result on learn dataset: " << learnResult << "\n";
-
-      m_network.ForwardPass(evalData.input);
-      lastOutput = m_network.GetOutput();
-      performanceData = EvalData<U>{ lastOutput, evalData.groundTruth };
-      double evalResult = m_eval(performanceData);
+      evalSet.clear();
+      for (auto &&d : evalData)
+      {
+        m_network.ForwardPass(d.input);
+        evalSet.emplace_back(EvalData<U>{ m_network.GetOutput(), d.groundTruth });
+      }
+      double evalResult = m_eval(evalSet);
+      std::cout << "Result on eval dataset: " << evalResult << "\n";
       
       if (evalResult >= constants::precision)
       {

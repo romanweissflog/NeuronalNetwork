@@ -11,6 +11,9 @@ namespace train
     std::vector<InputType> input;
     std::vector<OutputType> groundTruth;
   };
+
+  template<typename T, typename U>
+  using LearnSet = std::vector<LearnData<T, U>>;
 }
 
 #endif

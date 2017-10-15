@@ -6,13 +6,13 @@
 int main()
 {
   using namespace network;
-  train::Train<double, double> networkTrain(1U);
+  train::Train<double, double> networkTrain(0U);
   try
   {
     std::vector<double> input{};
     std::vector<double> expected{};
-    train::LearnData<double, double> learnData{ input, expected };
-    auto const finalWeights = networkTrain(learnData, 0.5);
+    train::LearnSet<double, double> learnSet{ {input, expected} };
+    auto const finalWeights = networkTrain(learnSet, 0.5);
     std::cout << "Layersize: " << finalWeights.size() << "\n";
     std::cout << "Inputlayer neuron size: " << finalWeights[0].second.size() << "\n";
     std::cout << "Inputlayer neuron 1 connection size: " << finalWeights[0].second[1].second.size() << "\n";

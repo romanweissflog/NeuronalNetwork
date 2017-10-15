@@ -1,4 +1,5 @@
 #include "network/network.hpp"
+#include "network/config.h"
 
 #include <iostream>
 #include <exception>
@@ -9,6 +10,9 @@ int main()
   using DNetwork = Network<double>;
   try
   {
+    std::string configPath = "C:\\Users\\roman\\Documents\\Projekte\\NeuronalNetwork\\config.json";
+    network::Config config = network::GetConfig(configPath);
+
     // create check
     DNetwork network(1U);
     std::cout << network << "\n";
