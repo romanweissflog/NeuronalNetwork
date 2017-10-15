@@ -26,7 +26,7 @@ namespace train
         throw std::runtime_error("Empty eval data");
       }
       
-      double result{};
+      double error{};
       for (auto &&d : data)
       {
         if (d.hypothesis.size() == 0)
@@ -38,22 +38,14 @@ namespace train
           throw std::runtime_error("Bad input size for eval data");
         }
 
-        size_t correctCount{};
-        size_t totalCount = d.hypothesis.size();
-        for (size_t i{}; i < totalCount; ++i)
+        for (size_t i{}; i < d.hypothesis.size(); ++i)
         {
           auto &&h = d.hypothesis[i];
           auto &&gt = d.groundTruth[i];
-          if (h == gt)
-          {
-            correctCount++;
-          }
+          error += std::pow(h - gt, 2);
         }
-
-        result += static_cast<double>(correctCount) / static_cast<double>(totalCount);
       }
-      result /= static_cast<double>(data.size());
-      return result;
+      return error;
     }
   };
 }

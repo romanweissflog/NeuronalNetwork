@@ -12,7 +12,6 @@ namespace
 
   double Initialize()
   {
-    return 1.0;
     return constants::gen(constants::re);
   }
 }
@@ -29,7 +28,7 @@ namespace network
   void Connection::AdaptWeight(double delta)
   {
     m_oldWeight = m_weight;
-    m_weight = m_weight + delta;
+    m_weight = m_weight - delta;
   }
 
   double Connection::GetWeight() const

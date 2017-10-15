@@ -25,6 +25,7 @@ namespace network
   struct Config
   {
     NetworkType networkType;
+    double step;
     std::vector<LayerConfig> layers;
   };
 

@@ -196,6 +196,13 @@ namespace network
     auto rootObj = root.get<picojson::object>();
 
     config.networkType = GetType(rootObj);
+    
+    if (rootObj.count("step") == 0)
+    {
+      throw std::runtime_error("Config doesn't contain step value");
+    }
+    config.step = GetDouble(rootObj["step"]);
+
     config.layers.push_back(GetInputLayer(rootObj));
     for (size_t i{}; i < GetHiddenLayerSize(rootObj); ++i)
     {

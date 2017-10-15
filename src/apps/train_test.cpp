@@ -12,9 +12,24 @@ int main()
   Train<double, double> networkTrain(config);
   try
   {
-    std::vector<double> input{};
-    std::vector<double> expected{};
-    train::LearnSet<double, double> learnSet{ {input, expected} };
+    std::vector<double> inputFF{ 0.0, 0.0 };
+    std::vector<double> inputTF{ 1.0, 0.0 };
+    std::vector<double> inputFT{ 0.0, 1.0 };
+    std::vector<double> inputTT{ 1.0, 1.0 };
+    std::vector<double> expectedF{ 0.0 };
+    std::vector<double> expectedT{ 1.0 };
+    train::LearnSet<double, double> learnSet
+    { 
+      { inputFF, expectedF },
+      { inputTF, expectedF },
+      { inputFT, expectedF },
+      { inputTT, expectedT },
+      { inputFF, expectedF },
+      { inputTF, expectedF },
+      { inputFT, expectedF },
+      { inputTT, expectedT },
+    };
+
     auto const finalWeights = networkTrain(learnSet, 0.5);
     std::cout << "Layersize: " << finalWeights.size() << "\n";
     std::cout << "Inputlayer neuron size: " << finalWeights[0].second.size() << "\n";

@@ -2,7 +2,7 @@
     "type": "number",
     "inputLayer": {
         "number_neurons": 2,
-        "bias": false
+        "bias": true
     },
     "hiddenLayer": [
     ],
@@ -10,5 +10,6 @@
         "number_neurons": 1,
         "transfer_function": "sum",
         "activation_function": "sigmoid"
-    }
+    },
+    "step": 0.1
 }

@@ -38,6 +38,7 @@ namespace network
     Layer<T> m_outputLayer;
     std::vector<Layer<T>> m_hiddenLayer;
     Output m_currentOutput;
+    double m_step;
   };
 }
 

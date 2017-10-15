@@ -5,20 +5,13 @@
 
 #include <vector>
 
-namespace
-{
-  namespace constants
-  {
-    double const backwardEps = 0.1;
-  }
-}
-
 namespace network
 {
   template<typename T>
   Network<T>::Network(Config const &config, size_t indent)
     : Common(indent)
     , m_hiddenLayerSize(config.layers.size() - 2)
+    , m_step(config.step)
   {
     // TBD: use search to get correct config for layers
     size_t neuronCount{};
@@ -131,13 +124,13 @@ namespace network
       idx++;
     }
 
-    auto adaptWeights = [](Layer<T> &layer, Delta const &deltas)
+    auto adaptWeights = [this](Layer<T> &layer, Delta const &deltas)
     {
       for (size_t i{}; i < deltas.size(); ++i)
       {
         for (auto &&n : layer)
         {
-          double delta = constants::backwardEps * deltas[i] * n->GetOuputValue();
+          double delta = m_step * deltas[i] * n->GetOuputValue();
           n->GetConnection(i).AdaptWeight(delta);
         }
       }

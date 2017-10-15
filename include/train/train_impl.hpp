@@ -9,8 +9,8 @@ namespace
   namespace constants
   {
     // will be read by config later on
-    size_t const maxIter = 10U;
-    double const precision = 0.9;
+    size_t const maxIter = 100000U;
+    double const precision = 0.1;
   }
 }
 
@@ -19,7 +19,9 @@ namespace train
   template<typename T, typename U>
   Train<T, U>::Train(network::Config const &config)
     : m_network(config)
-  {}
+  {
+    std::cout << m_network << "\n";
+  }
 
   template<typename T, typename U>
   network::NetworkWeights Train<T, U>::operator()(typename LearnSet<T, U> const &data, double percentageTrain)
@@ -37,7 +39,8 @@ namespace train
     for (size_t i{}; i < data.size(); ++i)
     {
       double v = gen(re);
-      if (v <= percentageTrain)
+      //if (v <= percentageTrain)
+      if (i < data.size() / 2)
       {
         trainData.push_back(data[i]);
       }
@@ -48,7 +51,7 @@ namespace train
     }
 
     auto backupWeights = m_network.GetWeights();
-    auto lastResult = 0.0;
+    auto lastResult = 1e2;
     EvalSet<U> trainEvalSet;
     EvalSet<U> evalSet;
     for (size_t i{}; i <= constants::maxIter; ++i)
@@ -71,8 +74,8 @@ namespace train
         m_network.ForwardPass(d.input);
         trainEvalSet.emplace_back(EvalData<U>{ m_network.GetOutput(), d.groundTruth });
       }
-      double trainResult = m_eval(trainEvalSet);
-      std::cout << "Result on train dataset: " << trainResult << "\n";
+      double trainError = m_eval(trainEvalSet);
+      std::cout << "Result on train dataset: " << trainError << "\n";
 
       evalSet.clear();
       for (auto &&d : evalData)
@@ -83,21 +86,22 @@ namespace train
       double evalResult = m_eval(evalSet);
       std::cout << "Result on eval dataset: " << evalResult << "\n";
       
-      if (evalResult >= constants::precision)
+      if (evalResult < constants::precision)
       {
         std::cout << "Found best solution\n";
         break;
       }
-      else if (evalResult < lastResult)
-      {
-        std::cout << "Result was getting worse - reset last weights and break\n";
-        m_network.SetWeights(backupWeights);
-        break;
-      }
+      //else if (evalResult > lastResult)
+      //{
+      //  std::cout << "Result was getting worse - reset last weights and break\n";
+      //  m_network.SetWeights(backupWeights);
+      //  break;
+      //}
 
       backupWeights = m_network.GetWeights();
       lastResult = evalResult;
     }
+    return m_network.GetWeights();
   }
 }
 
