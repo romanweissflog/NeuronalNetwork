@@ -8,14 +8,43 @@
 namespace network
 {
   template<typename T>
-  Neuron<T>::Neuron(size_t idx, NeuronType type, size_t indent)
+  Neuron<T>::Neuron(NeuronConfig const &config, size_t idx, NeuronType type, size_t indent)
     : Common(indent)
     , m_idx(idx)
     , m_type(type)
     , m_signal(idx, indent + 2)
     , m_input(0.0)
     , m_output(1.0)
-  {}
+    , m_transferFunctionType(config.transferFunction)
+    , m_activationFunctionType(config.activationFunction)
+  {
+    switch (m_transferFunctionType)
+    {
+    case TransferFunctionType::TypeSum: m_transferFunction = transfer_function::LinearSum; break;
+    case ActivationFunctionType::TypeNone: break;
+    default:
+      throw std::runtime_error("Invalid transfer function");
+    }
+
+    switch (m_activationFunctionType)
+    {
+    case ActivationFunctionType::TypeIdentity:
+      m_activationFunction = activation_function::Identity;
+      m_derivateFunction = first_derivate::Identity;
+      break;
+    case ActivationFunctionType::TypeReLu:
+      m_activationFunction = activation_function::ReLu;
+      m_derivateFunction = first_derivate::ReLu;
+      break;
+    case ActivationFunctionType::TypeSigmoid:
+      m_activationFunction = activation_function::Sigmoid;
+      m_derivateFunction = first_derivate::Sigmoid;
+    case ActivationFunctionType::TypeNone:
+      break;
+    default:
+      throw std::runtime_error("Invalid activation function");
+    }
+  }
 
   template<typename T>
   T Neuron<T>::GetOuputValue() const
@@ -93,7 +122,8 @@ namespace network
   std::ostream& Neuron<T>::Print(std::ostream &os) const
   {
     Indent(os);
-    os << "Neuron " << GetName() << ": input: " << m_input << ", output: " << m_output << "\n";
+    os << "Neuron " << GetName() << ": transfer: " << to_string(m_transferFunctionType)
+      << ", activation: " << to_string(m_activationFunctionType) << ", input: " << m_input << ", output: " << m_output << "\n";
     for (auto &&c : m_signal)
     {
       os << c.first;
@@ -103,8 +133,8 @@ namespace network
 
 
   template<typename T>
-  InputNeuron<T>::InputNeuron(size_t idx, size_t indent)
-    : Neuron<T>(idx, NeuronType::TypeInput, indent)
+  InputNeuron<T>::InputNeuron(NeuronConfig const &config, size_t idx, size_t indent)
+    : Neuron<T>(config, idx, NeuronType::TypeInput, indent)
   {}
 
   template<typename T>
@@ -130,8 +160,8 @@ namespace network
 
 
   template<typename T>
-  HiddenNeuron<T>::HiddenNeuron(size_t idx, size_t indent)
-    : Neuron<T>(idx, NeuronType::TypeHidden, indent)
+  HiddenNeuron<T>::HiddenNeuron(NeuronConfig const &config, size_t idx, size_t indent)
+    : Neuron<T>(config, idx, NeuronType::TypeHidden, indent)
   {}
 
   template<typename T>
@@ -143,8 +173,8 @@ namespace network
   template<typename T>
   void HiddenNeuron<T>::Process()
   {
-    m_input = transfer_function::LinearSum(m_inputValues);
-    m_output = activation_function::Identity(m_input);
+    m_input = m_transferFunction(m_inputValues);
+    m_output = m_activationFunction(m_input);
   }
 
   template<typename T>
@@ -161,8 +191,8 @@ namespace network
 
 
   template<typename T>
-  OutputNeuron<T>::OutputNeuron(size_t idx, size_t indent)
-    : Neuron<T>(idx, NeuronType::TypeOutput, indent)
+  OutputNeuron<T>::OutputNeuron(NeuronConfig const &config, size_t idx, size_t indent)
+    : Neuron<T>(config, idx, NeuronType::TypeOutput, indent)
   {}
 
   template<typename T>
@@ -174,8 +204,8 @@ namespace network
   template<typename T>
   void OutputNeuron<T>::Process()
   {
-    m_input = transfer_function::LinearSum(m_inputValues);
-    m_output = activation_function::Identity(m_input);
+    m_input = m_transferFunction(m_inputValues);
+    m_output = m_activationFunction(m_input);
   }
 
   template<typename T>
@@ -186,8 +216,8 @@ namespace network
 
 
   template<typename T>
-  BiasNeuron<T>::BiasNeuron(size_t idx, size_t indent)
-    : Neuron<T>(idx, NeuronType::TypeBias, indent)
+  BiasNeuron<T>::BiasNeuron(NeuronConfig const &config, size_t idx, size_t indent)
+    : Neuron<T>(config, idx, NeuronType::TypeBias, indent)
   {
     m_input = 1.0;
     m_output = 1.0;

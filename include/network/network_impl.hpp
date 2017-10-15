@@ -16,19 +16,20 @@ namespace
 namespace network
 {
   template<typename T>
-  Network<T>::Network(size_t nrHiddenLayer, size_t indent)
+  Network<T>::Network(Config const &config, size_t indent)
     : Common(indent)
-    , m_hiddenLayerSize(nrHiddenLayer)
+    , m_hiddenLayerSize(config.layers.size() - 2)
   {
+    // TBD: use search to get correct config for layers
     size_t neuronCount{};
-    m_inputLayer = Layer<T>(2, NeuronType::TypeInput, neuronCount, m_indent + 2);
+    m_inputLayer = Layer<T>(config.layers[0], neuronCount, m_indent + 2);
     neuronCount += 3;
     for (size_t i{}; i < m_hiddenLayerSize; ++i)
     {
-      m_hiddenLayer.push_back(Layer<T>(2, NeuronType::TypeHidden, neuronCount, m_indent + 2));
+      m_hiddenLayer.push_back(Layer<T>(config.layers[i + 1], neuronCount, m_indent + 2));
       neuronCount += 3;
     }
-    m_outputLayer = Layer<T>(2, NeuronType::TypeOutput, neuronCount, m_indent + 2);
+    m_outputLayer = Layer<T>(config.layers[m_hiddenLayerSize + 1], neuronCount, m_indent + 2);
 
     GenerateFullyConnected();
   }
@@ -69,7 +70,7 @@ namespace network
   {
     Reset();
 
-    if (input.size() != m_inputLayer.GetSize() - 1) // -1 because of Bias
+    if (input.size() != m_inputLayer.GetSize()) // -1 because of Bias
     {
       throw std::runtime_error("Bad input size");
     }

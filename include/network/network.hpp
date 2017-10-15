@@ -3,6 +3,7 @@
 
 #include "layer.hpp"
 #include "common_interface.hpp"
+#include "config.h"
 
 #include <array>
 
@@ -18,7 +19,7 @@ namespace network
     using Output = std::vector<T>;
 
   public:
-    Network(size_t nrHidden = 0, size_t ident = 0);
+    Network(Config const &config, size_t ident = 0);
     ~Network() = default;
     void ForwardPass(Input const &input);
     void BackwardPass(Output const &expected);

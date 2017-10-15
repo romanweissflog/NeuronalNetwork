@@ -5,6 +5,7 @@
 #include "connection.h"
 #include "types.h"
 #include "common_interface.hpp"
+#include "config.h"
 
 #include <vector>
 #include <memory>
@@ -15,7 +16,7 @@ namespace network
   class Neuron : Common
   {
   public:
-    Neuron(size_t idx = 0, NeuronType type = NeuronType::TypeUndef, size_t ident = 0);
+    Neuron(NeuronConfig const &config = {}, size_t idx = 0, NeuronType type = NeuronType::TypeUndef, size_t ident = 0);
     virtual ~Neuron() = default;
     virtual T GetOuputValue() const;
     virtual T GetInputValue() const;
@@ -39,6 +40,11 @@ namespace network
     NeuronType m_type;
     T m_input;
     T m_output;
+    std::function<double(std::vector<WeightedInput> const&)> m_transferFunction;
+    std::function<double(double)> m_activationFunction;
+    std::function<double(double)> m_derivateFunction;
+    TransferFunctionType m_transferFunctionType;
+    ActivationFunctionType m_activationFunctionType;
   };
 
 
@@ -46,7 +52,7 @@ namespace network
   class InputNeuron : public Neuron<T>
   {
   public:
-    InputNeuron(size_t idx, size_t m_indent);
+    InputNeuron(NeuronConfig const &config, size_t idx, size_t m_indent);
     void SetInputValue(double weight, T v) override;
     void Reset() override;
     void Connect(std::shared_ptr<Neuron> const &other) override;
@@ -60,7 +66,7 @@ namespace network
   class HiddenNeuron : public Neuron<T>
   {
   public:
-    HiddenNeuron(size_t idx, size_t m_indent);
+    HiddenNeuron(NeuronConfig const &config, size_t idx, size_t m_indent);
     void SetInputValue(double weight, T v) override;
     void Process() override;
     void Reset() override;
@@ -75,7 +81,7 @@ namespace network
   class OutputNeuron : public Neuron<T>
   {
   public:
-    OutputNeuron(size_t idx, size_t m_indent);
+    OutputNeuron(NeuronConfig const &config, size_t idx, size_t m_indent);
     void SetInputValue(double weight, T v) override;
     void Process() override;
     void Reset() override;
@@ -89,7 +95,7 @@ namespace network
   class BiasNeuron : public Neuron<T>
   {
   public:
-    BiasNeuron(size_t idx, size_t m_indent);
+    BiasNeuron(NeuronConfig const &config, size_t idx, size_t m_indent);
     void Connect(std::shared_ptr<Neuron> const &other) override;
   };
 }

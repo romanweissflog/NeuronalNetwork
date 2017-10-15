@@ -21,6 +21,8 @@ namespace network
   namespace first_derivate
   {
     double Sigmoid(double);
+    double Identity(double);
+    double ReLu(double);
   }
 }
 

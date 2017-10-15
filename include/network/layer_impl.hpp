@@ -10,28 +10,29 @@ namespace network
   }
 
   template<typename T>
-  Layer<T>::Layer(size_t nrNeurons, NeuronType const &type, size_t neuronNumber, size_t indent)
+  Layer<T>::Layer(LayerConfig const &config, size_t neuronNumber, size_t indent)
     : Common(indent)
-    , m_type(type)
+    , m_type(config.type)
+    , m_hasBias(config.withBias)
   {
-    if (type == NeuronType::TypeInput || type == NeuronType::TypeHidden)
+    if (m_hasBias && (m_type == NeuronType::TypeInput || m_type == NeuronType::TypeHidden))
     {
-      m_neurons.emplace_back(std::make_shared<BiasNeuron<T>>(neuronNumber, m_indent + 2));
+      m_neurons.emplace_back(std::make_shared<BiasNeuron<T>>(config.neuronConfig, neuronNumber, m_indent + 2));
       neuronNumber++;
     }
-    for (size_t i{}; i < nrNeurons; ++i, ++neuronNumber)
+    for (size_t i{}; i < config.nrNeurons; ++i, ++neuronNumber)
     {
-      if (type == NeuronType::TypeInput)
+      if (m_type == NeuronType::TypeInput)
       {
-        m_neurons.emplace_back(std::make_shared<InputNeuron<T>>(neuronNumber, m_indent + 2));
+        m_neurons.emplace_back(std::make_shared<InputNeuron<T>>(config.neuronConfig, neuronNumber, m_indent + 2));
       }
-      else if (type == NeuronType::TypeHidden)
+      else if (m_type == NeuronType::TypeHidden)
       {
-        m_neurons.emplace_back(std::make_shared<HiddenNeuron<T>>(neuronNumber, m_indent + 2));
+        m_neurons.emplace_back(std::make_shared<HiddenNeuron<T>>(config.neuronConfig, neuronNumber, m_indent + 2));
       }
-      else if (type == NeuronType::TypeOutput)
+      else if (m_type == NeuronType::TypeOutput)
       {
-        m_neurons.emplace_back(std::make_shared<OutputNeuron<T>>(neuronNumber, m_indent + 2));
+        m_neurons.emplace_back(std::make_shared<OutputNeuron<T>>(config.neuronConfig, neuronNumber, m_indent + 2));
       }
       else
       {
@@ -63,7 +64,7 @@ namespace network
   template<typename T>
   size_t Layer<T>::GetSize() const
   {
-    return m_neurons.size();
+    return (m_hasBias ? m_neurons.size() - 1 : m_neurons.size());
   }
 
   template<typename T>

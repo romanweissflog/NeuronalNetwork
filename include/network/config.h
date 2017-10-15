@@ -7,13 +7,19 @@
 namespace network
 {
   // tbd: use boost::optional for some variables
+
+  struct NeuronConfig
+  {
+    TransferFunctionType transferFunction;
+    ActivationFunctionType activationFunction;
+  };
+
   struct LayerConfig
   {
     size_t nrNeurons;
     bool withBias;
     NeuronType type;
-    TransferFunctionType transferFunction;
-    ActivationFunctionType activationFunction;
+    NeuronConfig neuronConfig;
   };
 
   struct Config

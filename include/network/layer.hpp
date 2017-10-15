@@ -3,6 +3,7 @@
 
 #include "neuron.hpp"
 #include "common_interface.hpp"
+#include "config.h"
 
 #include <vector>
 #include <memory>
@@ -18,7 +19,7 @@ namespace network
 
   public:
     Layer();
-    Layer(size_t nrNeurons, NeuronType const &type, size_t totalNrExistingNeurons, size_t indent);
+    Layer(LayerConfig const &config, size_t totalNrExistingNeurons, size_t indent);
     ~Layer() = default;
     std::shared_ptr<Neuron<T>> GetNeuron(size_t idx);
     NeuronType GetNeuronType(size_t idx) const;
@@ -34,6 +35,7 @@ namespace network
     const_iterator end() const;
 
   private:
+    bool m_hasBias;
     NeuronLayer m_neurons;
     NeuronType m_type;
   };

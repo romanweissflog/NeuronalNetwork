@@ -14,7 +14,7 @@ int main()
     network::Config config = network::GetConfig(configPath);
 
     // create check
-    DNetwork network(1U);
+    DNetwork network(config);
     std::cout << network << "\n";
 
     // forward pass check

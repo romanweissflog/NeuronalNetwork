@@ -41,5 +41,15 @@ namespace network
       double const f = activation_function::Sigmoid(x);
       return f * (1 - f);
     }
+
+    double Identity(double)
+    {
+      return 1;
+    }
+
+    double ReLu(double x)
+    {
+      return (x <= 0 ? 0 : 1);
+    }
   }
 }

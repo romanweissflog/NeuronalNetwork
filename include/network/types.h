@@ -29,7 +29,8 @@ namespace network
   {
     TypeNumber,
     TypeImage,
-    TypePointCloud
+    TypePointCloud,
+    TypeNone
   };
 
   enum class NeuronType : uint8_t
@@ -38,19 +39,22 @@ namespace network
     TypeInput,
     TypeHidden,
     TypeOutput,
-    TypeBias
+    TypeBias,
+    TypeNone
   };
 
   enum class TransferFunctionType : uint8_t
   {
-    TypeSum
+    TypeSum,
+    TypeNone
   };
 
   enum class ActivationFunctionType : uint8_t
   {
     TypeIdentity,
     TypeSigmoid,
-    TypeReLu
+    TypeReLu,
+    TypeNone
   };
 
   std::string to_string(NeuronType);

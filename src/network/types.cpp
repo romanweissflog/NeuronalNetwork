@@ -11,6 +11,7 @@ namespace network
     case NeuronType::TypeHidden: return "Hidden";
     case NeuronType::TypeOutput: return "Output";
     case NeuronType::TypeBias: return "Bias";
+    case NeuronType::TypeNone: return "None";
     default:
       throw std::runtime_error("Unknown neuron type");
     }
@@ -23,6 +24,7 @@ namespace network
     case NetworkType::TypeNumber: return "number";
     case NetworkType::TypeImage: return "Image";
     case NetworkType::TypePointCloud: return "PointCloud";
+    case NetworkType::TypeNone: return "None";
     default:
       throw std::runtime_error("Unknown network type");
     }
@@ -32,7 +34,8 @@ namespace network
   {
     switch (type)
     {
-    case TransferFunctionType::TypeSum: return "sum";
+    case TransferFunctionType::TypeSum: return "Sum";
+    case TransferFunctionType::TypeNone: return "None";
     default:
       throw std::runtime_error("Unknown transfer function type");
     }
@@ -42,9 +45,10 @@ namespace network
   {
     switch (type)
     {
-    case ActivationFunctionType::TypeIdentity: return "identity";
-    case ActivationFunctionType::TypeSigmoid: return "sigmoid";
-    case ActivationFunctionType::TypeReLu: return "relu";
+    case ActivationFunctionType::TypeIdentity: return "Identity";
+    case ActivationFunctionType::TypeSigmoid: return "Sigmoid";
+    case ActivationFunctionType::TypeReLu: return "Relu";
+    case ActivationFunctionType::TypeNone: return "None";
     default:
       throw std::runtime_error("Unknown activation function type");
     }

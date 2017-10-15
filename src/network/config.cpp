@@ -81,8 +81,9 @@ namespace
   {
     if (jsonObj.count("transfer_function") == 0)
     {
-      throw std::runtime_error("Config doesn't contain type entry");
+      return network::TransferFunctionType::TypeSum;
     }
+
     auto const stringType = GetString(jsonObj["transfer_function"]);
     if (stringType == "sum")
     {
@@ -96,6 +97,11 @@ namespace
 
   network::ActivationFunctionType GetActivationFunction(picojson::object &jsonObj)
   {
+    if (jsonObj.count("activation_function") == 0)
+    {
+      return network::ActivationFunctionType::TypeNone;
+    }
+
     auto const stringType = GetString(jsonObj["activation_function"]);
     if (stringType == "identity")
     {
@@ -124,11 +130,8 @@ namespace
     }
     layer.nrNeurons = static_cast<size_t>(GetDouble(jsonObj["number_neurons"]));
 
-    layer.transferFunction = GetTransferFunction(jsonObj);
-    if (jsonObj.count("activation_function") != 0)
-    {
-      layer.activationFunction = GetActivationFunction(jsonObj);
-    }
+    layer.neuronConfig.transferFunction = GetTransferFunction(jsonObj);
+    layer.neuronConfig.activationFunction = GetActivationFunction(jsonObj);
     if (jsonObj.count("bias") != 0)
     {
       layer.withBias = GetBool(jsonObj["bias"]);
