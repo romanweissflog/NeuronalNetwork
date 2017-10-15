@@ -6,7 +6,10 @@
 int main()
 {
   using namespace network;
-  train::Train<double, double> networkTrain(0U);
+  using namespace train;
+  std::string configPath = "C:\\Users\\roman\\Documents\\Projekte\\NeuronalNetwork\\config.json";
+  Config config = GetConfig(configPath);
+  Train<double, double> networkTrain(config);
   try
   {
     std::vector<double> input{};

@@ -17,8 +17,8 @@ namespace
 namespace train
 {
   template<typename T, typename U>
-  Train<T, U>::Train(size_t hiddenLayerSize)
-    : m_network(hiddenLayerSize)
+  Train<T, U>::Train(network::Config const &config)
+    : m_network(config)
   {}
 
   template<typename T, typename U>

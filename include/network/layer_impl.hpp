@@ -5,9 +5,7 @@ namespace network
 {
   template<typename T>
   Layer<T>::Layer()
-  {
-
-  }
+  {}
 
   template<typename T>
   Layer<T>::Layer(LayerConfig const &config, size_t neuronNumber, size_t indent)

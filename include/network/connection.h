@@ -8,7 +8,7 @@ namespace network
   class Connection : Common
   {
   public:
-    Connection(double weight = 0.0, size_t indent = 0.0);
+    Connection(size_t indent = 0.0);
     void AdaptWeight(double delta);
     double GetWeight() const;
     void SetWeight(double weight);

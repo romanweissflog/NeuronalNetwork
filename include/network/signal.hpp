@@ -50,7 +50,7 @@ namespace network
 
     virtual void Connect(Slot const &slot)
     {
-      Connection conn(1.0, m_indent);
+      Connection conn(m_indent);
       m_slots.emplace_back(conn, slot);
     }
 

@@ -2,7 +2,7 @@
 #define TRAIN_HPP_
 
 #include "network/network.hpp"
-#include "network/types.h"
+#include "network/config.h"
 #include "learn_data.hpp"
 #include "eval.hpp"
 
@@ -14,7 +14,7 @@ namespace train
     using T = NetworkType;
     using U = OutputType;
   public:
-    Train(size_t hiddenLayerSize = 0U);
+    Train(network::Config const &config);
     network::NetworkWeights operator()(LearnSet<T, U> const &data, double percentageTrain);
 
   private:

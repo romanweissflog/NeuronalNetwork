@@ -20,13 +20,11 @@ namespace
 namespace network
 {
 
-  Connection::Connection(double weight, size_t indent)
+  Connection::Connection(size_t indent)
     : Common(indent)
-    , m_weight(weight)
-    , m_oldWeight(weight)
-  {
-
-  }
+    , m_weight(Initialize())
+    , m_oldWeight(m_weight)
+  {}
 
   void Connection::AdaptWeight(double delta)
   {
