@@ -1,42 +1,45 @@
 #include "network/functions.h"
 #include <algorithm>
 
-namespace transfer_function
+namespace network
 {
-  double LinearSum(std::vector<WeightedInput> const &input)
+  namespace transfer_function
   {
-    double sum{};
-    for (auto &&i : input)
+    double LinearSum(std::vector<WeightedInput> const &input)
     {
-      sum += i.weight * i.value;
+      double sum{};
+      for (auto &&i : input)
+      {
+        sum += i.weight * i.value;
+      }
+      return sum;
     }
-    return sum;
-  }
-}
-
-namespace activation_function
-{
-  double Sigmoid(double x)
-  {
-    return 1.0 / (1 + std::exp(x));
   }
 
-  double Identity(double x)
+  namespace activation_function
   {
-    return x;
+    double Sigmoid(double x)
+    {
+      return 1.0 / (1 + std::exp(x));
+    }
+
+    double Identity(double x)
+    {
+      return x;
+    }
+
+    double ReLu(double x)
+    {
+      return std::max(0.0, x);
+    }
   }
 
-  double ReLu(double x)
+  namespace first_derivate
   {
-    return std::max(0.0, x);
-  }
-}
-
-namespace first_derivate
-{
-  double Sigmoid(double x)
-  {
-    double const f = activation_function::Sigmoid(x);
-    return f * (1 - f);
+    double Sigmoid(double x)
+    {
+      double const f = activation_function::Sigmoid(x);
+      return f * (1 - f);
+    }
   }
 }

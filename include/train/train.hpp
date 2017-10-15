@@ -3,16 +3,28 @@
 
 #include "network/network.hpp"
 #include "network/types.h"
-#include "train_data.hpp"
+#include "learn_data.hpp"
+#include "eval.hpp"
+#include "adapt.hpp"
 
-template<size_t Size, typename T, typename U>
-struct Train
+namespace train
 {
-public:
-  NetworkWeights operator()(TrainData<T, U> const &data);
+  template<typename NetworkType, typename OutputType>
+  struct Train
+  {
+    using T = NetworkType;
+    using U = OutputType;
+  public:
+    Train(size_t hiddenLayerSize = 0U);
+    network::NetworkWeights operator()(LearnData<T, U> const &data, double percentageTrain);
 
-private:
-  network::Network<Size, T> m_network;
-};
+  private:
+    network::Network<T> m_network;
+    Adapt<T, U> m_adapt;
+    Eval<U> m_eval;
+  };
+}
+
+#include "train_impl.hpp"
 
 #endif

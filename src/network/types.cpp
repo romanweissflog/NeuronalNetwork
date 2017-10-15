@@ -1,15 +1,18 @@
 #include "network/types.h"
 
-std::string to_string(NeuronType type)
+namespace network
 {
-  switch (type)
+  std::string to_string(NeuronType type)
   {
-  case NeuronType::TypeUndef: return "Undef";
-  case NeuronType::TypeInput: return "Input";
-  case NeuronType::TypeHidden: return "Hidden";
-  case NeuronType::TypeOutput: return "Output";
-  case NeuronType::TypeBias: return "Bias";
-  default:
-    throw std::runtime_error("Unknown Neuron Type");
+    switch (type)
+    {
+    case NeuronType::TypeUndef: return "Undef";
+    case NeuronType::TypeInput: return "Input";
+    case NeuronType::TypeHidden: return "Hidden";
+    case NeuronType::TypeOutput: return "Output";
+    case NeuronType::TypeBias: return "Bias";
+    default:
+      throw std::runtime_error("Unknown Neuron Type");
+    }
   }
 }

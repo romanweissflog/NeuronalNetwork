@@ -15,7 +15,6 @@ namespace
 
 namespace network
 {
-
   template<typename T>
   Network<T>::Network(size_t nrHiddenLayer, size_t indent)
     : Common(indent)

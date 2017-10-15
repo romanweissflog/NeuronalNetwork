@@ -39,17 +39,15 @@ set(network_src
 source_group(Lib\\network\\src FILES ${network_src})
 
 set(train_include
-  include/train/train_data.hpp
+  include/train/adapt.hpp
+  include/train/eval.hpp
   include/train/train.hpp
-  include/train/test.hpp
-  include/train/eval.h
+  include/train/learn_data.hpp
 )
 source_group(Lib\\train\\include FILES ${train_include})
 
 set(train_src
   include/train/train_impl.hpp
-  include/train/test_impl.hpp
-  src/train/eval.cpp
 )
 source_group(Lib\\train\\src FILES ${train_src})
 
@@ -58,9 +56,17 @@ add_library(${name} ${network_include} ${network_src} ${train_include} ${train_s
 target_include_directories(${name} PUBLIC include)
 set_target_properties(${name} PROPERTIES FOLDER Lib)
 
-set(name TestApp)
+set(name NetworkTest)
 add_executable(${name}
-  src/apps/own_network_main.cpp
+  src/apps/network_test.cpp
+)
+target_link_libraries(${name} Network)
+target_include_directories(${name} PUBLIC include)
+set_target_properties(${name} PROPERTIES FOLDER Apps)
+
+set(name TrainTest)
+add_executable(${name}
+  src/apps/train_test.cpp
 )
 target_link_libraries(${name} Network)
 target_include_directories(${name} PUBLIC include)
